@@ -33,12 +33,21 @@
             content: ''; position: absolute; inset: 6px; background: #764ba2; border-radius: 2px;
         }
 
+        .header-actions { display: flex; gap: 10px; }
+
         .settings-btn {
             background: rgba(147, 197, 253, .05); border: 1px solid rgba(147, 197, 253, .2);
             padding: 10px 20px; border-radius: 10px; cursor: pointer; color: #e8eaf6;
             font-size: 13px; font-weight: 500; transition: 0.2s;
         }
         .settings-btn:hover { background: rgba(147, 197, 253, .15); border-color: #667eea; }
+        
+        /* Specialized style for the Open Cloaked shortcut button */
+        .primary-btn {
+            background: rgba(102, 126, 234, 0.15); border: 1px solid rgba(102, 126, 234, 0.4);
+            color: #a5b4fc;
+        }
+        .primary-btn:hover { background: rgba(102, 126, 234, 0.25); border-color: #667eea; color: #fff; }
 
         /* Search Bar */
         .search-container {
@@ -133,7 +142,10 @@
             <div class="logo-box"></div>
             CLOAKED
         </div>
-        <button class="settings-btn" onclick="openSettings()">TAB DISGUISE</button>
+        <div class="header-actions">
+            <button class="settings-btn primary-btn" onclick="openCloaked('https://riaannn.github.io/CCL/')">OPEN CLOAKED</button>
+            <button class="settings-btn" onclick="openSettings()">TAB DISGUISE</button>
+        </div>
     </header>
 
     <div class="search-container">
@@ -168,13 +180,10 @@
  */
 function armProtection() {
     window.addEventListener("beforeunload", (event) => {
-        // This triggers the browser's standard "Leave site?" dialog
         event.preventDefault();
         event.returnValue = ""; 
     });
 }
-
-// Arm the protection as soon as the user clicks anywhere or presses a key
 window.addEventListener("mousedown", armProtection, { once: true });
 window.addEventListener("keydown", armProtection, { once: true });
 
@@ -191,7 +200,7 @@ let selectedPreset = JSON.parse(localStorage.getItem("preset")) || presets[0];
 
 /**
  * DIRECTORY DATA
- * To add more: {name: "Title", url: "https://example.com", icon: "https://icon.url"}
+ * Edit the sections below to add your games and apps
  */
 const shortcuts = {
     web: [
@@ -200,12 +209,11 @@ const shortcuts = {
         {name: "GN Math", url: "https://blahaj.dedyn.io/gn.html", icon: "https://cdn.discordapp.com/avatars/1366573040846241894/b449678987d3a22819a5ba8a8a9cba1b.webp?size=80"}
     ],
     games: [
-        {name: "N/A", url: "", icon: "https://via.placeholder.com/80/1a1f3a/ffffff?text=GAME"},
-
+        {name: "Game Template", url: "https://example.com", icon: ""}, 
     ],
     apps: [
-        {name: "UtopiaSearch", url: "https://trucving.funcionalhard.com.ar/s/", icon: "https://via.placeholder.com/80/1a1f3a/ffffff?text=APP"},
-
+        {name: "UtopiaSearch", url: "https://trucving.funcionalhard.com.ar/s/", icon: "https://trucving.funcionalhard.com.ar/favicon.ico"},
+        {name: "App Template", url: "https://example.com", icon: ""}
     ]
 };
 
@@ -219,9 +227,9 @@ function renderGrid() {
     }
 
     grid.innerHTML = items.map(item => {
-        // Generates a placeholder if icon is empty
+        // Creates a text-based placeholder if no icon URL is provided or if it fails to load
         const iconHtml = item.icon 
-            ? `<img src="${item.icon}" class="card-icon" onclick="openCloaked('${item.url}')" onerror="this.src='https://via.placeholder.com/80/1a1f3a/ffffff?text=${item.name[0]}'">`
+            ? `<img src="${item.icon}" class="card-icon" onclick="openCloaked('${item.url}')" onerror="this.outerHTML='<div class=\'card-icon\' onclick=\'openCloaked(\\\'${item.url}\\\')\' style=\'display:flex;align-items:center;justify-content:center;background:rgba(147,197,253,0.1);font-weight:bold;font-size:24px;color:#667eea\'>${item.name[0]}</div>'">`
             : `<div class="card-icon" onclick="openCloaked('${item.url}')" style="display:flex;align-items:center;justify-content:center;background:rgba(147,197,253,0.1);font-weight:bold;font-size:24px;color:#667eea">${item.name[0]}</div>`;
 
         return `
@@ -259,23 +267,6 @@ function switchTab(tab) {
     renderGrid();
 }
 
-function renderGrid() {
-    const grid = document.getElementById("grid");
-    const items = shortcuts[currentTab];
-    if(!items.length) {
-        grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px;opacity:.3;font-size:12px;">DIRECTORY EMPTY</div>`;
-        return;
-    }
-    grid.innerHTML = items.map(item => `
-        <div class="card">
-            <img src="${item.icon}" class="card-icon" onclick="openCloaked('${item.url}')">
-            <div class="card-title">${item.name}</div>
-            <div class="link-preview">
-                <button class="copy-link-btn" onclick="copyShortcutLink('${item.url}', this)">COPY URL</button>
-            </div>
-        </div>`).join('');
-}
-
 function copyShortcutLink(url, btn) {
     event.stopPropagation();
     navigator.clipboard.writeText(url).then(() => {
@@ -296,14 +287,14 @@ function openFromUrl() {
 
 function openCloaked(url) {
     const win = window.open("about:blank", "_blank");
-    if(!win) return;
+    if(!win) {
+        alert("Pop-up blocked! Please allow pop-ups to launch cloaked windows.");
+        return;
+    }
 
     const doc = win.document;
-  win.addEventListener("beforeunload", function(e) {
-    e.preventDefault();
-    e.returnValue = "";
-  });
     
+    // Apply Tab Disguise
     if(selectedPreset.id !== "none") {
         doc.title = selectedPreset.title;
         const link = doc.createElement("link");
@@ -323,11 +314,11 @@ function openCloaked(url) {
     iframe.style.border = "none";
     doc.body.appendChild(iframe);
 
+    // Floating Nav Controls inside the new window
     const controls = doc.createElement("div");
-    controls.id = "ui-nav";
-    controls.style = "position:fixed;bottom:25px;right:25px;display:flex;gap:10px;z-index:9999;transition:0.3s opacity";
+    controls.style = "position:fixed;bottom:25px;right:25px;display:flex;gap:10px;z-index:9999;";
 
-    function btn(text, action) {
+    function createNavBtn(text, action) {
         const b = doc.createElement("button");
         b.textContent = text;
         b.style = "padding:12px 18px;border-radius:8px;border:none;background:rgba(10,14,39,0.9);color:white;cursor:pointer;font-size:11px;font-weight:700;backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.1)";
@@ -335,21 +326,16 @@ function openCloaked(url) {
         return b;
     }
 
-    controls.appendChild(btn("REFRESH", () => iframe.src = iframe.src));
-    controls.appendChild(btn("NAVIGATE", () => {
+    controls.appendChild(createNavBtn("REFRESH", () => iframe.src = iframe.src));
+    controls.appendChild(createNavBtn("NAVIGATE", () => {
         const u = win.prompt("Enter URL:", iframe.src);
         if(u) iframe.src = u;
     }));
 
     doc.body.appendChild(controls);
-
-    win.addEventListener('resize', () => {
-        const isFull = win.innerWidth === win.screen.width && win.innerHeight === win.screen.height;
-        controls.style.opacity = isFull ? "0" : "1";
-        controls.style.pointerEvents = isFull ? "none" : "auto";
-    });
 }
 
+// Initial Render
 renderGrid();
 </script>
 </body>
