@@ -6,202 +6,108 @@
     <title>Cloaked Launcher</title>
     <style>
         :root {
-            --bg: #05070a;
+            --bg-gradient: radial-gradient(circle at top, #1e293b 0%, #05070a 100%);
             --surface: #0f172a;
             --accent: #6366f1;
-            --text: #f8fafc;
-            --text-dim: #94a3b8;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
             --glass: rgba(255, 255, 255, 0.03);
             --border: rgba(255, 255, 255, 0.1);
+            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
-
         body {
             font-family: 'Inter', -apple-system, sans-serif;
-            background: radial-gradient(circle at top, #1e293b 0%, #05070a 100%);
-            color: var(--text);
+            background: var(--bg-gradient);
+            color: var(--text-main);
             min-height: 100vh;
             line-height: 1.6;
         }
 
-        .container { 
-            max-width: 1100px; 
-            margin: 0 auto; 
-            padding: 40px 20px; 
+        .container { max-width: 1100px; margin: 0 auto; padding: 40px 20px; }
+
+        header {
+            display: flex; align-items: center; justify-content: space-between; margin-bottom: 60px;
         }
 
-        /* --- HEADER --- */
-        header {
-            display: flex; 
-            align-items: center; 
-            justify-content: space-between;
+        .logo { display: flex; align-items: center; gap: 12px; font-size: 1.4rem; font-weight: 800; text-transform: uppercase; }
+        .logo-box { width: 32px; height: 32px; background: var(--accent); border-radius: 8px; box-shadow: 0 0 20px rgba(99, 102, 241, 0.4); }
+
+        /* --- UTOPIA SEARCH ACTION BUTTON --- */
+        .action-area {
+            display: flex;
+            justify-content: center;
             margin-bottom: 60px;
         }
 
-        .logo {
-            display: flex; 
-            align-items: center; 
-            gap: 12px; 
-            font-size: 22px;
-            font-weight: 800; 
-            letter-spacing: 1px;
-            text-transform: uppercase;
-        }
-
-        .logo-box {
-            width: 32px; height: 32px; 
-            background: var(--accent);
-            border-radius: 8px;
-            box-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
-        }
-
-        /* --- BUTTONS --- */
-        .btn {
+        .utopia-launch-btn {
+            display: flex;
+            align-items: center;
+            gap: 15px;
             background: var(--glass);
             border: 1px solid var(--border);
-            padding: 10px 20px; 
-            border-radius: 12px; 
-            cursor: pointer; 
-            color: var(--text);
-            font-weight: 600; 
-            transition: 0.2s;
-        }
-
-        .btn:hover { background: var(--border); transform: translateY(-2px); }
-        .btn-primary { background: var(--accent); border: none; color: white; }
-        .btn-primary:hover { box-shadow: 0 0 15px rgba(99, 102, 241, 0.4); }
-
-        /* --- SEARCH BAR --- */
-        .search-container {
-            max-width: 650px; 
-            margin: 0 auto 60px;
-            display: flex; 
-            gap: 10px;
-            background: var(--glass);
-            padding: 8px;
-            border-radius: 18px;
-            border: 1px solid var(--border);
-        }
-
-        .search-input {
-            flex: 1; 
-            padding: 12px 18px; 
-            background: transparent;
-            border: none; 
-            color: white; 
-            font-size: 16px; 
-        }
-
-        .search-input:focus { outline: none; }
-
-        .launch-btn {
-            background: var(--text);
-            color: black;
-            border: none;
-            padding: 0 25px;
-            border-radius: 12px;
-            font-weight: 700;
+            padding: 16px 40px;
+            border-radius: 24px;
             cursor: pointer;
+            transition: var(--transition);
+            backdrop-filter: blur(10px);
+            text-decoration: none;
+            color: white;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
 
-        /* --- TABS --- */
-        .tabs {
-            display: flex; 
-            justify-content: center;
-            gap: 10px; 
-            margin-bottom: 40px;
+        .utopia-launch-btn:hover {
+            border-color: var(--accent);
+            background: rgba(99, 102, 241, 0.1);
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(99, 102, 241, 0.2);
         }
 
-        .tab { 
-            padding: 8px 24px; 
-            border-radius: 20px; 
-            cursor: pointer; 
-            color: var(--text-dim);
+        .utopia-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+        }
+
+        .utopia-text-group { text-align: left; }
+        .utopia-title { display: block; font-weight: 800; font-size: 1.1rem; letter-spacing: 0.5px; }
+        .utopia-sub { display: block; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; }
+
+        /* --- BUTTONS & TABS --- */
+        .btn {
+            padding: 10px 24px;
+            border-radius: 12px;
+            cursor: pointer;
             font-weight: 600;
-            transition: 0.3s;
+            transition: var(--transition);
+            border: 1px solid var(--border);
+            background: var(--glass);
+            color: var(--text-main);
         }
 
+        .btn-primary { background: var(--accent); border: none; color: white; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(99, 102, 241, 0.3); }
+
+        .tabs { display: flex; justify-content: center; gap: 12px; margin-bottom: 40px; }
+        .tab { color: var(--text-muted); border: none; background: transparent; }
         .tab.active { background: var(--accent); color: white; }
 
         /* --- GRID --- */
-        .grid {
-            display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 20px; 
-        }
-
-        .card {
-            background: var(--glass);
-            border: 1px solid var(--border);
-            border-radius: 24px; 
-            padding: 30px; 
-            text-align: center; 
-            transition: 0.3s;
-        }
-
-        .card:hover { 
-            background: rgba(255,255,255,0.05);
-            border-color: var(--accent);
-            transform: translateY(-5px);
-        }
-
-        .card-icon {
-            width: 70px; height: 70px; 
-            border-radius: 20px;
-            margin-bottom: 20px; 
-            object-fit: cover;
-            cursor: pointer;
-        }
-
-        .card-title { font-weight: 700; margin-bottom: 15px; font-size: 18px; }
-
-        .copy-link-btn {
-            width: 100%; 
-            padding: 10px; 
-            font-size: 12px;
-            background: transparent;
-            border: 1px solid var(--border);
-            color: var(--text-dim);
-            border-radius: 10px;
-            cursor: pointer;
-        }
-
-        .copy-link-btn:hover { background: white; color: black; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 24px; }
+        .card { background: var(--glass); border: 1px solid var(--border); border-radius: 24px; padding: 32px; text-align: center; transition: var(--transition); }
+        .card:hover { border-color: var(--accent); transform: translateY(-8px); background: rgba(255,255,255,0.06); }
+        .card-icon { width: 80px; height: 80px; border-radius: 22px; margin-bottom: 20px; object-fit: cover; cursor: pointer; }
 
         /* --- MODAL --- */
-        .modal {
-            position: fixed; inset: 0; 
-            background: rgba(0,0,0,0.8);
-            backdrop-filter: blur(12px);
-            display: none; align-items: center; justify-content: center; 
-            z-index: 1000;
-        }
-
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(15px); display: none; align-items: center; justify-content: center; z-index: 1000; }
         .modal.active { display: flex; }
-
-        .modal-content {
-            background: var(--surface); 
-            padding: 40px; 
-            border-radius: 30px;
-            width: 90%; max-width: 450px; 
-            border: 1px solid var(--border);
-        }
-
-        .preset-grid { 
-            display: grid; grid-template-columns: 1fr 1fr; gap: 15px; 
-        }
-
-        .preset-card {
-            padding: 15px; border-radius: 15px; 
-            background: var(--glass);
-            display: flex; align-items: center; gap: 10px; 
-            cursor: pointer; border: 2px solid transparent;
-        }
-
+        .modal-content { background: var(--surface); padding: 40px; border-radius: 32px; width: 90%; max-width: 480px; border: 1px solid var(--border); }
+        .preset-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .preset-card { padding: 16px; border-radius: 16px; background: var(--glass); display: flex; align-items: center; gap: 12px; cursor: pointer; border: 2px solid transparent; transition: var(--transition); }
         .preset-card.active { border-color: var(--accent); background: rgba(99, 102, 241, 0.1); }
 
-        .note { text-align: center; opacity: 0.3; font-size: 12px; margin-top: 60px; letter-spacing: 1px; }
+        .note { text-align: center; opacity: 0.4; font-size: 0.75rem; margin-top: 80px; letter-spacing: 2px; text-transform: uppercase; }
     </style>
 </head>
 <body>
@@ -209,139 +115,143 @@
 <div class="container">
     <header>
         <div class="logo"><div class="logo-box"></div> CLOAKED</div>
-        <div style="display: flex; gap: 10px;">
-            <button class="btn btn-primary" onclick="openCloaked('https://riaannn.github.io/CCL/')">LAUNCH DASHBOARD</button>
-            <button class="btn" onclick="openSettings()">DISGUISE</button>
+        <div style="display: flex; gap: 12px;">
+            <button class="btn btn-primary" onclick="Launcher.open('https://riaannn.github.io/CCL/')">DASHBOARD</button>
+            <button class="btn" onclick="UI.toggleModal('settingsModal', true)">DISGUISE</button>
         </div>
     </header>
 
-    <div class="search-container">
-        <input id="urlInput" class="search-input" placeholder="Enter URL (e.g. https://google.com)" value="https://">
-        <button class="launch-btn" onclick="openFromUrl()">GO</button>
+    <div class="action-area">
+        <div class="utopia-launch-btn" onclick="Launcher.open('https://trucving.funcionalhard.com.ar/s/')">
+            <img src="https://trucving.funcionalhard.com.ar/favicon.ico" class="utopia-icon" onerror="this.src='https://via.placeholder.com/32'">
+            <div class="utopia-text-group">
+                <span class="utopia-sub">Primary Search</span>
+                <span class="utopia-title">UTOPIA SEARCH</span>
+            </div>
+        </div>
     </div>
 
-    <div class="tabs">
-        <div class="tab active" onclick="switchTab('web')" data-tab="web">WEB</div>
-        <div class="tab" onclick="switchTab('games')" data-tab="games">GAMES</div>
-        <div class="tab" onclick="switchTab('apps')" data-tab="apps">APPS</div>
+    <div class="tabs" id="tabBar">
+        <button class="btn tab active" onclick="UI.switchTab('web')">WEB</button>
+        <button class="btn tab" onclick="UI.switchTab('games')">GAMES</button>
+        <button class="btn tab" onclick="UI.switchTab('apps')">APPS</button>
     </div>
 
-    <div class="grid" id="grid"></div>
-
-    <div class="note">STRICT HEADERS MAY BLOCK SOME EMBEDS</div>
+    <div class="grid" id="mainGrid"></div>
+    <div class="note">Direct Access Mode. Frame-based navigation enabled.</div>
 </div>
 
 <div class="modal" id="settingsModal">
     <div class="modal-content">
-        <h2 style="margin-bottom: 25px; text-align: center;">TAB CLOAK</h2>
+        <h2 style="margin-bottom: 24px; text-align: center;">Tab Disguise</h2>
         <div class="preset-grid" id="presetGrid"></div>
-        <button class="btn btn-primary" style="width: 100%; margin-top: 30px; padding: 15px;" onclick="closeSettings()">SAVE SETTINGS</button>
+        <button class="btn btn-primary" style="width: 100%; margin-top: 32px;" onclick="UI.toggleModal('settingsModal', false)">SAVE CHANGES</button>
     </div>
 </div>
 
 <script>
-/* --- EXIT PROTECTION --- */
-window.addEventListener('beforeunload', (e) => {
-    e.preventDefault();
-    e.returnValue = ''; 
-});
-
-/* --- STATE --- */
-let currentTab = "web";
-const presets = [
-    {id:"google", name:"Google", title:"Google", icon:"https://www.google.com/favicon.ico"},
-    {id:"drive", name:"Drive", title:"My Drive", icon:"https://ssl.gstatic.com/docs/doclist/images/drive_2022q3_32dp.png"},
-    {id:"canvas", name:"Canvas", title:"Dashboard", icon:"https://wdmcs.instructure.com/favicon.ico"},
-    {id:"gmail", name:"Gmail", title:"Inbox", icon:"https://ssl.gstatic.com/ui/v1/icons/mail/rfr/gmail.ico"},
-    {id:"none", name:"None", title:"Launcher", icon:""}
-];
-
-let selectedPreset = JSON.parse(localStorage.getItem("preset")) || presets[0];
-
-const shortcuts = {
-    web: [
-        {name: "Truffled", url: "https://1563.px.meridianoshop.com.br/", icon: "https://i.imgur.com/Avqlk5Q.jpeg"},
-        {name: "AnuraOS", url: "https://anura.pro", icon: "https://i.imgur.com/6vvxLxR.jpeg"},
-        {name: "GN Math", url: "https://blahaj.dedyn.io/gn.html", icon: "https://cdn.discordapp.com/avatars/1366573040846241894/b449678987d3a22819a5ba8a8a9cba1b.webp?size=80"}
+const DATA = {
+    currentTab: "web",
+    presets: [
+        {id:"google", name:"Google", title:"Google", icon:"https://www.google.com/favicon.ico"},
+        {id:"drive", name:"Drive", title:"My Drive - Google Drive", icon:"https://ssl.gstatic.com/docs/doclist/images/drive_2022q3_32dp.png"},
+        {id:"canvas", name:"Canvas", title:"Dashboard", icon:"https://wdmcs.instructure.com/favicon.ico"},
+        {id:"gmail", name:"Gmail", title:"Gmail", icon:"https://ssl.gstatic.com/ui/v1/icons/mail/rfr/gmail.ico"},
+        {id:"none", name:"Default", title:"Launcher", icon:""}
     ],
-    games: [{name: "Template", url: "#", icon: ""}],
-    apps: [{name: "UtopiaSearch", url: "https://trucving.funcionalhard.com.ar/s/", icon: "https://trucving.funcionalhard.com.ar/favicon.ico"}]
+    shortcuts: {
+        web: [
+            {name: "Truffled", url: "https://1563.px.meridianoshop.com.br/", icon: "https://i.imgur.com/Avqlk5Q.jpeg"},
+            {name: "AnuraOS", url: "https://anura.pro", icon: "https://i.imgur.com/6vvxLxR.jpeg"},
+            {name: "GN Math", url: "https://blahaj.dedyn.io/gn.html", icon: "https://cdn.discordapp.com/avatars/1366573040846241894/b449678987d3a22819a5ba8a8a9cba1b.webp?size=80"}
+        ],
+        games: [{name: "Example Game", url: "https://example.com", icon: ""}],
+        apps: [] // Removed UtopiaSearch from here as it's now the main button
+    }
 };
 
-/* --- LOGIC --- */
-function renderGrid() {
-    const grid = document.getElementById("grid");
-    const items = shortcuts[currentTab];
-    
-    grid.innerHTML = items.map(item => `
-        <div class="card">
-            <img src="${item.icon || 'https://via.placeholder.com/70'}" class="card-icon" onclick="openCloaked('${item.url}')">
-            <div class="card-title">${item.name}</div>
-            <button class="copy-link-btn" onclick="copyShortcutLink('${item.url}', this)">Copy Link</button>
-        </div>`).join('');
-}
+const Launcher = {
+    selectedPreset: JSON.parse(localStorage.getItem("preset")) || DATA.presets[0],
 
-function switchTab(tab) {
-    currentTab = tab;
-    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
-    renderGrid();
-}
+    open(url) {
+        if (!url || url === "https://") return;
+        
+        // Proxy prefixing removed - all links open directly
+        const finalUrl = url;
 
-function openCloaked(url) {
-    const win = window.open("about:blank", "_blank");
-    if(!win) return alert("Pop-up blocked! Enable pop-ups to use Cloaked.");
+        const win = window.open("about:blank", "_blank");
+        if (!win) return alert("Pop-up blocked!");
 
-    const doc = win.document;
-    doc.title = selectedPreset.title;
-    
-    const link = doc.createElement("link");
-    link.rel = "icon"; link.href = selectedPreset.icon;
-    doc.head.appendChild(link);
+        const doc = win.document;
+        doc.title = this.selectedPreset.title;
+        if (this.selectedPreset.icon) {
+            const link = doc.createElement("link");
+            link.rel = "icon"; link.href = this.selectedPreset.icon;
+            doc.head.appendChild(link);
+        }
 
-    doc.body.style = "margin:0; overflow:hidden; background:#000;";
-    const iframe = doc.createElement("iframe");
-    iframe.src = url;
-    iframe.style = "width:100vw; height:100vh; border:none;";
-    iframe.setAttribute("allow", "fullscreen; autoplay;");
-    doc.body.appendChild(iframe);
+        doc.body.style = "margin:0; padding:0; overflow:hidden; background:#000;";
+        const iframe = doc.createElement("iframe");
+        iframe.src = finalUrl;
+        iframe.style = "width:100vw; height:100vh; border:none;";
+        iframe.setAttribute("allow", "fullscreen; autoplay; cursor-lock; clipboard-write");
+        doc.body.appendChild(iframe);
 
-    // Prevent closing the cloaked window
-    win.addEventListener('beforeunload', (e) => {
-        e.preventDefault();
-        e.returnValue = '';
-    });
-}
+        win.addEventListener('beforeunload', (e) => { e.preventDefault(); e.returnValue = ''; });
+    },
 
-function renderPresets() {
-    const grid = document.getElementById("presetGrid");
-    grid.innerHTML = presets.map(p => `
-        <div class="preset-card ${selectedPreset.id === p.id ? "active" : ""}" onclick="selectPreset('${p.id}')">
-            <img src="${p.icon || 'https://via.placeholder.com/20'}" style="width:20px">
-            <span>${p.name}</span>
-        </div>`).join('');
-}
+    setPreset(id) {
+        this.selectedPreset = DATA.presets.find(p => p.id === id);
+        localStorage.setItem("preset", JSON.stringify(this.selectedPreset));
+        UI.renderPresets();
+    }
+};
 
-function selectPreset(id) {
-    selectedPreset = presets.find(p => p.id === id);
-    localStorage.setItem("preset", JSON.stringify(selectedPreset));
-    renderPresets();
-}
+const UI = {
+    renderGrid() {
+        const grid = document.getElementById("mainGrid");
+        grid.innerHTML = DATA.shortcuts[DATA.currentTab].map(item => `
+            <div class="card">
+                <img src="${item.icon}" class="card-icon" 
+                     onclick="Launcher.open('${item.url}')" 
+                     onerror="this.src='https://via.placeholder.com/80/0f172a/ffffff?text=${item.name[0]}'">
+                <div class="card-title">${item.name}</div>
+                <button class="btn" style="width:100%; font-size:12px;" onclick="UI.copyLink('${item.url}', this)">Copy Link</button>
+            </div>`).join('');
+    },
 
-function openSettings() { renderPresets(); document.getElementById("settingsModal").classList.add("active"); }
-function closeSettings() { document.getElementById("settingsModal").classList.remove("active"); }
+    renderPresets() {
+        document.getElementById("presetGrid").innerHTML = DATA.presets.map(p => `
+            <div class="preset-card ${Launcher.selectedPreset.id === p.id ? 'active' : ''}" 
+                 onclick="Launcher.setPreset('${p.id}')">
+                <img src="${p.icon || 'https://via.placeholder.com/20'}" style="width:20px; border-radius:4px;">
+                <span style="font-size: 0.9rem; font-weight: 500;">${p.name}</span>
+            </div>`).join('');
+    },
 
-function openFromUrl() {
-    const url = document.getElementById("urlInput").value.trim();
-    if(url && url !== "https://") openCloaked(url);
-}
+    switchTab(tabId) {
+        DATA.currentTab = tabId;
+        document.querySelectorAll('#tabBar .tab').forEach(btn => {
+            btn.classList.toggle('active', btn.innerText.toLowerCase() === tabId);
+        });
+        this.renderGrid();
+    },
 
-function copyShortcutLink(url, btn) {
-    navigator.clipboard.writeText(url);
-    btn.textContent = "COPIED!";
-    setTimeout(() => btn.textContent = "Copy Link", 1500);
-}
+    toggleModal(id, show) {
+        document.getElementById(id).classList.toggle('active', show);
+        if (show) this.renderPresets();
+    },
 
-renderGrid();
+    copyLink(url, btn) {
+        navigator.clipboard.writeText(url);
+        const oldText = btn.innerText;
+        btn.innerText = "COPIED!";
+        setTimeout(() => btn.innerText = oldText, 1500);
+    }
+};
+
+window.addEventListener('beforeunload', (e) => { e.preventDefault(); e.returnValue = ''; });
+UI.renderGrid();
 </script>
 </body>
 </html>
