@@ -3,355 +3,257 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Custom Cloaked Launcher</title>
+    <title>Cloaked Launcher</title>
     <style>
-        /* --- Base Styles --- */
+        :root {
+            --bg: #05070a;
+            --surface: #0f172a;
+            --accent: #6366f1;
+            --text: #f8fafc;
+            --text-dim: #94a3b8;
+            --glass: rgba(255, 255, 255, 0.03);
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #0a0e27; 
-            color: #e8eaf6;
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: radial-gradient(circle at top, #1e293b 0%, #05070a 100%);
+            color: var(--text);
             min-height: 100vh;
-            overflow-x: hidden;
-            line-height: 1.5;
+            line-height: 1.6;
         }
 
         .container { 
-            max-width: 1200px; 
+            max-width: 1100px; 
             margin: 0 auto; 
             padding: 40px 20px; 
         }
 
-        /* --- Header Section --- */
+        /* --- HEADER --- */
         header {
             display: flex; 
             align-items: center; 
             justify-content: space-between;
-            padding-bottom: 30px; 
-            border-bottom: 1px solid rgba(147, 197, 253, .1);
-            margin-bottom: 40px;
+            margin-bottom: 60px;
         }
 
         .logo {
             display: flex; 
             align-items: center; 
             gap: 12px; 
-            font-size: 24px;
+            font-size: 22px;
             font-weight: 800; 
-            letter-spacing: -1px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text; 
-            -webkit-text-fill-color: transparent;
+            letter-spacing: 1px;
+            text-transform: uppercase;
         }
 
         .logo-box {
-            width: 32px; 
-            height: 32px; 
-            border: 2px solid #667eea; 
+            width: 32px; height: 32px; 
+            background: var(--accent);
             border-radius: 8px;
-            position: relative;
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
         }
 
-        .logo-box::after {
-            content: ''; 
-            position: absolute; 
-            inset: 6px; 
-            background: #764ba2; 
-            border-radius: 2px;
-        }
-
-        .header-actions { display: flex; gap: 12px; }
-
-        /* --- Buttons --- */
+        /* --- BUTTONS --- */
         .btn {
-            background: rgba(147, 197, 253, .05); 
-            border: 1px solid rgba(147, 197, 253, .2);
+            background: var(--glass);
+            border: 1px solid var(--border);
             padding: 10px 20px; 
-            border-radius: 10px; 
+            border-radius: 12px; 
             cursor: pointer; 
-            color: #e8eaf6;
-            font-size: 13px; 
+            color: var(--text);
             font-weight: 600; 
-            transition: all 0.2s ease;
+            transition: 0.2s;
         }
 
-        .btn:hover { 
-            background: rgba(147, 197, 253, .15); 
-            border-color: #667eea; 
-            transform: translateY(-1px);
-        }
-        
-        .btn-primary {
-            background: rgba(102, 126, 234, 0.15); 
-            border: 1px solid rgba(102, 126, 234, 0.4);
-            color: #a5b4fc;
-        }
+        .btn:hover { background: var(--border); transform: translateY(-2px); }
+        .btn-primary { background: var(--accent); border: none; color: white; }
+        .btn-primary:hover { box-shadow: 0 0 15px rgba(99, 102, 241, 0.4); }
 
-        /* --- Search Bar --- */
+        /* --- SEARCH BAR --- */
         .search-container {
-            max-width: 600px; 
-            margin: 0 auto 50px;
+            max-width: 650px; 
+            margin: 0 auto 60px;
             display: flex; 
-            gap: 12px;
+            gap: 10px;
+            background: var(--glass);
+            padding: 8px;
+            border-radius: 18px;
+            border: 1px solid var(--border);
         }
 
         .search-input {
             flex: 1; 
-            padding: 16px 20px; 
-            background: rgba(147, 197, 253, .03);
-            border: 1px solid rgba(147, 197, 253, .2); 
-            border-radius: 14px;
-            color: #e8eaf6; 
-            font-size: 15px; 
-            transition: 0.3s;
+            padding: 12px 18px; 
+            background: transparent;
+            border: none; 
+            color: white; 
+            font-size: 16px; 
         }
 
-        .search-input:focus { 
-            outline: none; 
-            border-color: #667eea; 
-            background: rgba(147, 197, 253, .07); 
-            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
-        }
+        .search-input:focus { outline: none; }
 
         .launch-btn {
-            padding: 0 30px; 
-            border-radius: 14px; 
+            background: var(--text);
+            color: black;
             border: none;
-            background: #e8eaf6; 
-            color: #0a0e27;
-            font-size: 14px; 
-            font-weight: 700; 
-            cursor: pointer; 
-            transition: 0.2s;
+            padding: 0 25px;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
         }
 
-        .launch-btn:hover { background: #fff; transform: translateY(-1px); }
-
-        /* --- Tabs --- */
-        .tabs-wrapper {
-            display: flex;
+        /* --- TABS --- */
+        .tabs {
+            display: flex; 
             justify-content: center;
+            gap: 10px; 
             margin-bottom: 40px;
         }
 
-        .tabs {
-            display: flex; 
-            gap: 8px; 
-            padding: 6px;
-            background: rgba(147, 197, 253, .05); 
-            border-radius: 14px;
-        }
-
         .tab { 
-            padding: 10px 24px; 
-            border-radius: 10px; 
+            padding: 8px 24px; 
+            border-radius: 20px; 
             cursor: pointer; 
-            transition: 0.3s; 
-            font-size: 14px; 
-            font-weight: 600; 
-            color: rgba(232, 234, 246, 0.5);
+            color: var(--text-dim);
+            font-weight: 600;
+            transition: 0.3s;
         }
 
-        .tab.active { 
-            background: #1a1f3a; 
-            color: #fff; 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3); 
-        }
+        .tab.active { background: var(--accent); color: white; }
 
-        /* --- Grid & Cards --- */
+        /* --- GRID --- */
         .grid {
             display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 25px; 
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px; 
         }
 
         .card {
-            background: rgba(147, 197, 253, .03); 
-            border: 1px solid rgba(147, 197, 253, .1);
-            border-radius: 20px; 
-            padding: 24px; 
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 24px; 
+            padding: 30px; 
             text-align: center; 
-            transition: all .3s cubic-bezier(0.4, 0, 0.2, 1);
-            display: flex; 
-            flex-direction: column; 
-            align-items: center;
+            transition: 0.3s;
         }
 
         .card:hover { 
-            transform: translateY(-8px); 
-            border-color: rgba(102, 126, 234, 0.5); 
-            background: rgba(147, 197, 253, .06); 
+            background: rgba(255,255,255,0.05);
+            border-color: var(--accent);
+            transform: translateY(-5px);
         }
 
         .card-icon {
-            width: 85px; 
-            height: 85px; 
-            border-radius: 18px;
-            object-fit: cover; 
-            margin-bottom: 18px; 
+            width: 70px; height: 70px; 
+            border-radius: 20px;
+            margin-bottom: 20px; 
+            object-fit: cover;
             cursor: pointer;
-            transition: 0.3s;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
         }
 
-        .card:hover .card-icon { transform: scale(1.08); }
-
-        .card-title { 
-            font-size: 16px; 
-            font-weight: 700; 
-            margin-bottom: 15px; 
-            color: #fff; 
-        }
+        .card-title { font-weight: 700; margin-bottom: 15px; font-size: 18px; }
 
         .copy-link-btn {
             width: 100%; 
-            padding: 8px; 
-            font-size: 11px;
-            border: 1px solid rgba(147, 197, 253, 0.1); 
-            border-radius: 8px; 
-            background: rgba(255,255,255,0.02); 
-            color: rgba(232, 234, 246, 0.6); 
-            cursor: pointer; 
-            transition: 0.2s;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            padding: 10px; 
+            font-size: 12px;
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+            border-radius: 10px;
+            cursor: pointer;
         }
 
-        .copy-link-btn:hover { 
-            background: #e8eaf6; 
-            color: #0a0e27; 
-            border-color: #fff;
-        }
+        .copy-link-btn:hover { background: white; color: black; }
 
-        /* --- Modal --- */
+        /* --- MODAL --- */
         .modal {
             position: fixed; inset: 0; 
-            background: rgba(5, 7, 20, 0.85);
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(12px);
             display: none; align-items: center; justify-content: center; 
             z-index: 1000;
-            backdrop-filter: blur(8px);
         }
 
         .modal.active { display: flex; }
 
         .modal-content {
-            background: #111633; 
-            padding: 35px; 
-            border-radius: 24px;
-            width: 90%; 
-            max-width: 450px; 
-            border: 1px solid rgba(147, 197, 253, .1);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            background: var(--surface); 
+            padding: 40px; 
+            border-radius: 30px;
+            width: 90%; max-width: 450px; 
+            border: 1px solid var(--border);
         }
 
         .preset-grid { 
-            display: grid; 
-            grid-template-columns: 1fr 1fr; 
-            gap: 12px; 
+            display: grid; grid-template-columns: 1fr 1fr; gap: 15px; 
         }
 
         .preset-card {
-            padding: 14px; 
-            border-radius: 12px; 
-            background: rgba(255, 255, 255, 0.03);
-            display: flex; 
-            align-items: center; 
-            gap: 12px; 
-            cursor: pointer; 
-            border: 1px solid transparent; 
-            transition: 0.2s;
+            padding: 15px; border-radius: 15px; 
+            background: var(--glass);
+            display: flex; align-items: center; gap: 10px; 
+            cursor: pointer; border: 2px solid transparent;
         }
 
-        .preset-card.active { 
-            border-color: #667eea; 
-            background: rgba(102, 126, 234, 0.1); 
-        }
+        .preset-card.active { border-color: var(--accent); background: rgba(99, 102, 241, 0.1); }
 
-        .preset-icon { width: 22px; height: 22px; border-radius: 4px; }
-        
-        .note { 
-            text-align: center; 
-            font-size: 10px; 
-            color: rgba(232, 234, 246, 0.25); 
-            margin-top: 50px; 
-            text-transform: uppercase; 
-            letter-spacing: 1.5px; 
-        }
+        .note { text-align: center; opacity: 0.3; font-size: 12px; margin-top: 60px; letter-spacing: 1px; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <header>
-        <div class="logo">
-            <div class="logo-box"></div>
-            CLOAKED
-        </div>
-        <div class="header-actions">
-            <button class="btn btn-primary" onclick="openCloaked('https://riaannn.github.io/CCL/')">OPEN CLOAKED</button>
-            <button class="btn" onclick="openSettings()">TAB DISGUISE</button>
+        <div class="logo"><div class="logo-box"></div> CLOAKED</div>
+        <div style="display: flex; gap: 10px;">
+            <button class="btn btn-primary" onclick="openCloaked('https://riaannn.github.io/CCL/')">LAUNCH DASHBOARD</button>
+            <button class="btn" onclick="openSettings()">DISGUISE</button>
         </div>
     </header>
 
     <div class="search-container">
-        <input id="urlInput" class="search-input" placeholder="Enter Destination URL" value="https://">
-        <button class="launch-btn" onclick="openFromUrl()">LAUNCH</button>
+        <input id="urlInput" class="search-input" placeholder="Enter URL (e.g. https://google.com)" value="https://">
+        <button class="launch-btn" onclick="openFromUrl()">GO</button>
     </div>
 
-    <div class="tabs-wrapper">
-        <div class="tabs">
-            <div class="tab active" onclick="switchTab('web')" data-tab="web">WEB</div>
-            <div class="tab" onclick="switchTab('games')" data-tab="games">GAMES</div>
-            <div class="tab" onclick="switchTab('apps')" data-tab="apps">APPS</div>
-        </div>
+    <div class="tabs">
+        <div class="tab active" onclick="switchTab('web')" data-tab="web">WEB</div>
+        <div class="tab" onclick="switchTab('games')" data-tab="games">GAMES</div>
+        <div class="tab" onclick="switchTab('apps')" data-tab="apps">APPS</div>
     </div>
 
     <div class="grid" id="grid"></div>
 
-    <div class="note">
-        Strict frame headers may prevent some sites from loading
-    </div>
+    <div class="note">STRICT HEADERS MAY BLOCK SOME EMBEDS</div>
 </div>
 
 <div class="modal" id="settingsModal">
     <div class="modal-content">
-        <h3 style="margin-bottom:20px; font-size: 18px; text-align: center;">TAB DISGUISE</h3>
+        <h2 style="margin-bottom: 25px; text-align: center;">TAB CLOAK</h2>
         <div class="preset-grid" id="presetGrid"></div>
-        <button class="launch-btn" style="width:100%; margin-top:25px; padding:16px;" onclick="closeSettings()">SAVE CHANGES</button>
+        <button class="btn btn-primary" style="width: 100%; margin-top: 30px; padding: 15px;" onclick="closeSettings()">SAVE SETTINGS</button>
     </div>
 </div>
 
 <script>
-/* --- IMPROVED EXIT PROTECTION --- */
-function armProtection(targetWindow) {
-    const handleUnload = (e) => {
-        e.preventDefault();
-        e.returnValue = ''; // Required for most browsers
-        return '';
-    };
+/* --- EXIT PROTECTION --- */
+window.addEventListener('beforeunload', (e) => {
+    e.preventDefault();
+    e.returnValue = ''; 
+});
 
-    const activate = () => {
-        targetWindow.addEventListener('beforeunload', handleUnload);
-    };
-
-    // Listen for any interaction to satisfy browser security
-    targetWindow.addEventListener('mousedown', activate, { once: true });
-    targetWindow.addEventListener('keydown', activate, { once: true });
-    targetWindow.addEventListener('touchstart', activate, { once: true });
-}
-
-// Arm the main window
-armProtection(window);
-
-/* --- DATA & STATE --- */
+/* --- STATE --- */
 let currentTab = "web";
 const presets = [
     {id:"google", name:"Google", title:"Google", icon:"https://www.google.com/favicon.ico"},
-    {id:"drive", name:"Google Drive", title:"My Drive - Google Drive", icon:"https://ssl.gstatic.com/docs/doclist/images/drive_2022q3_32dp.png"},
+    {id:"drive", name:"Drive", title:"My Drive", icon:"https://ssl.gstatic.com/docs/doclist/images/drive_2022q3_32dp.png"},
     {id:"canvas", name:"Canvas", title:"Dashboard", icon:"https://wdmcs.instructure.com/favicon.ico"},
-    {id:"gmail", name:"Gmail", title:"Gmail", icon:"https://ssl.gstatic.com/ui/v1/icons/mail/rfr/gmail.ico"},
-    {id:"none", name:"Standard", title:"New Tab", icon:""}
+    {id:"gmail", name:"Gmail", title:"Inbox", icon:"https://ssl.gstatic.com/ui/v1/icons/mail/rfr/gmail.ico"},
+    {id:"none", name:"None", title:"Launcher", icon:""}
 ];
 
 let selectedPreset = JSON.parse(localStorage.getItem("preset")) || presets[0];
@@ -362,37 +264,21 @@ const shortcuts = {
         {name: "AnuraOS", url: "https://anura.pro", icon: "https://i.imgur.com/6vvxLxR.jpeg"},
         {name: "GN Math", url: "https://blahaj.dedyn.io/gn.html", icon: "https://cdn.discordapp.com/avatars/1366573040846241894/b449678987d3a22819a5ba8a8a9cba1b.webp?size=80"}
     ],
-    games: [
-        {name: "Game Template", url: "https://example.com", icon: ""}, 
-    ],
-    apps: [
-        {name: "UtopiaSearch", url: "https://trucving.funcionalhard.com.ar/s/", icon: "https://trucving.funcionalhard.com.ar/favicon.ico"},
-        {name: "App Template", url: "https://example.com", icon: ""}
-    ]
+    games: [{name: "Template", url: "#", icon: ""}],
+    apps: [{name: "UtopiaSearch", url: "https://trucving.funcionalhard.com.ar/s/", icon: "https://trucving.funcionalhard.com.ar/favicon.ico"}]
 };
 
-/* --- CORE FUNCTIONS --- */
+/* --- LOGIC --- */
 function renderGrid() {
     const grid = document.getElementById("grid");
     const items = shortcuts[currentTab];
     
-    if(!items.length) {
-        grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:100px;opacity:.2;font-size:13px;letter-spacing:2px;">NO CONTENT FOUND</div>`;
-        return;
-    }
-
-    grid.innerHTML = items.map(item => {
-        const iconHtml = item.icon 
-            ? `<img src="${item.icon}" class="card-icon" onclick="openCloaked('${item.url}')" onerror="this.outerHTML='<div class=\'card-icon\' onclick=\'openCloaked(\\\"${item.url}\\\")\' style=\'display:flex;align-items:center;justify-content:center;background:rgba(147,197,253,0.05);font-weight:bold;font-size:28px;color:#667eea\'>${item.name[0]}</div>'">`
-            : `<div class="card-icon" onclick="openCloaked('${item.url}')" style="display:flex;align-items:center;justify-content:center;background:rgba(147,197,253,0.05);font-weight:bold;font-size:28px;color:#667eea">${item.name[0]}</div>`;
-
-        return `
-            <div class="card">
-                ${iconHtml}
-                <div class="card-title">${item.name}</div>
-                <button class="copy-link-btn" onclick="copyShortcutLink('${item.url}', this)">Copy URL</button>
-            </div>`;
-    }).join('');
+    grid.innerHTML = items.map(item => `
+        <div class="card">
+            <img src="${item.icon || 'https://via.placeholder.com/70'}" class="card-icon" onclick="openCloaked('${item.url}')">
+            <div class="card-title">${item.name}</div>
+            <button class="copy-link-btn" onclick="copyShortcutLink('${item.url}', this)">Copy Link</button>
+        </div>`).join('');
 }
 
 function switchTab(tab) {
@@ -403,62 +289,35 @@ function switchTab(tab) {
 
 function openCloaked(url) {
     const win = window.open("about:blank", "_blank");
-    if(!win) return alert("Pop-up blocked!");
-
-    // Apply protection to the new window specifically
-    armProtection(win);
+    if(!win) return alert("Pop-up blocked! Enable pop-ups to use Cloaked.");
 
     const doc = win.document;
+    doc.title = selectedPreset.title;
     
-    // Tab Disguise
-    if(selectedPreset.id !== "none") {
-        doc.title = selectedPreset.title;
-        const link = doc.createElement("link");
-        link.rel = "icon";
-        link.href = selectedPreset.icon;
-        doc.head.appendChild(link);
-    }
+    const link = doc.createElement("link");
+    link.rel = "icon"; link.href = selectedPreset.icon;
+    doc.head.appendChild(link);
 
     doc.body.style = "margin:0; overflow:hidden; background:#000;";
-
     const iframe = doc.createElement("iframe");
     iframe.src = url;
     iframe.style = "width:100vw; height:100vh; border:none;";
-    
-    // Fullscreen support
-    iframe.setAttribute("allow", "fullscreen; autoplay; cursor-lock; clipboard-write");
-    iframe.setAttribute("allowfullscreen", "true");
-    
+    iframe.setAttribute("allow", "fullscreen; autoplay;");
     doc.body.appendChild(iframe);
 
-    // Floating Nav
-    const controls = doc.createElement("div");
-    controls.style = "position:fixed; bottom:20px; right:20px; display:flex; gap:8px; z-index:9999;";
-
-    const createBtn = (txt, fn) => {
-        const b = doc.createElement("button");
-        b.textContent = txt;
-        b.style = "padding:10px 15px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(10,14,39,0.85); color:white; cursor:pointer; font-size:10px; font-weight:bold; backdrop-filter:blur(5px);";
-        b.onclick = fn;
-        return b;
-    };
-
-    controls.appendChild(createBtn("REFRESH", () => iframe.src = iframe.src));
-    controls.appendChild(createBtn("NAVIGATE", () => {
-        const u = win.prompt("Enter URL:", iframe.src);
-        if(u) iframe.src = u;
-    }));
-
-    doc.body.appendChild(controls);
+    // Prevent closing the cloaked window
+    win.addEventListener('beforeunload', (e) => {
+        e.preventDefault();
+        e.returnValue = '';
+    });
 }
 
-/* --- SETTINGS --- */
 function renderPresets() {
     const grid = document.getElementById("presetGrid");
     grid.innerHTML = presets.map(p => `
         <div class="preset-card ${selectedPreset.id === p.id ? "active" : ""}" onclick="selectPreset('${p.id}')">
-            ${p.icon ? `<img src="${p.icon}" class="preset-icon">` : `<div class="preset-icon" style="background:#333"></div>`}
-            <div class="preset-name" style="font-size:12px; font-weight:600;">${p.name}</div>
+            <img src="${p.icon || 'https://via.placeholder.com/20'}" style="width:20px">
+            <span>${p.name}</span>
         </div>`).join('');
 }
 
@@ -471,18 +330,15 @@ function selectPreset(id) {
 function openSettings() { renderPresets(); document.getElementById("settingsModal").classList.add("active"); }
 function closeSettings() { document.getElementById("settingsModal").classList.remove("active"); }
 
-function copyShortcutLink(url, btn) {
-    event.stopPropagation();
-    navigator.clipboard.writeText(url).then(() => {
-        const old = btn.textContent;
-        btn.textContent = "COPIED!";
-        setTimeout(() => btn.textContent = old, 1500);
-    });
-}
-
 function openFromUrl() {
     const url = document.getElementById("urlInput").value.trim();
     if(url && url !== "https://") openCloaked(url);
+}
+
+function copyShortcutLink(url, btn) {
+    navigator.clipboard.writeText(url);
+    btn.textContent = "COPIED!";
+    setTimeout(() => btn.textContent = "Copy Link", 1500);
 }
 
 renderGrid();
