@@ -23,91 +23,48 @@
             color: var(--text-main);
             min-height: 100vh;
             line-height: 1.6;
+            overflow: hidden; /* Prevents scrollbars on the main dashboard */
         }
 
-        .container { max-width: 1100px; margin: 0 auto; padding: 40px 20px; }
-
-        header {
-            display: flex; align-items: center; justify-content: space-between; margin-bottom: 60px;
-        }
-
+        .container { max-width: 1100px; margin: 0 auto; padding: 40px 20px; height: 100vh; overflow-y: auto; }
+        header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 40px; }
         .logo { display: flex; align-items: center; gap: 12px; font-size: 1.4rem; font-weight: 800; text-transform: uppercase; }
         .logo-box { width: 32px; height: 32px; background: var(--accent); border-radius: 8px; box-shadow: 0 0 20px rgba(99, 102, 241, 0.4); }
 
-        /* --- UTOPIA SEARCH ACTION BUTTON --- */
-        .action-area {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 60px;
+        .search-container { margin-bottom: 40px; display: flex; justify-content: center; }
+        .search-input {
+            width: 100%; max-width: 500px; padding: 14px 24px; border-radius: 18px;
+            background: var(--glass); border: 1px solid var(--border); color: white;
+            font-size: 1rem; outline: none; transition: var(--transition);
         }
+        .search-input:focus { border-color: var(--accent); background: rgba(255,255,255,0.06); }
 
+        .action-area { display: flex; justify-content: center; gap: 20px; margin-bottom: 60px; flex-wrap: wrap; }
         .utopia-launch-btn {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            background: var(--glass);
-            border: 1px solid var(--border);
-            padding: 16px 40px;
-            border-radius: 24px;
-            cursor: pointer;
-            transition: var(--transition);
-            backdrop-filter: blur(10px);
-            text-decoration: none;
-            color: white;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            display: flex; align-items: center; gap: 15px; background: var(--glass);
+            border: 1px solid var(--border); padding: 16px 32px; border-radius: 24px;
+            cursor: pointer; transition: var(--transition); backdrop-filter: blur(10px);
+            text-decoration: none; color: white;
         }
-
-        .utopia-launch-btn:hover {
-            border-color: var(--accent);
-            background: rgba(99, 102, 241, 0.1);
-            transform: translateY(-3px);
-            box-shadow: 0 15px 40px rgba(99, 102, 241, 0.2);
-        }
-
-        .utopia-icon {
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-        }
-
-        .utopia-text-group { text-align: left; }
-        .utopia-title { display: block; font-weight: 800; font-size: 1.1rem; letter-spacing: 0.5px; }
-        .utopia-sub { display: block; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; }
-
-        /* --- BUTTONS & TABS --- */
-        .btn {
-            padding: 10px 24px;
-            border-radius: 12px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: var(--transition);
-            border: 1px solid var(--border);
-            background: var(--glass);
-            color: var(--text-main);
-        }
-
-        .btn-primary { background: var(--accent); border: none; color: white; }
-        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(99, 102, 241, 0.3); }
+        .utopia-launch-btn:hover { border-color: var(--accent); transform: translateY(-3px); background: rgba(99, 102, 241, 0.1); }
 
         .tabs { display: flex; justify-content: center; gap: 12px; margin-bottom: 40px; }
-        .tab { color: var(--text-muted); border: none; background: transparent; }
+        .btn { padding: 10px 24px; border-radius: 12px; cursor: pointer; font-weight: 600; border: 1px solid var(--border); background: var(--glass); color: var(--text-main); transition: var(--transition); }
+        .btn-primary { background: var(--accent); border: none; color: white; }
         .tab.active { background: var(--accent); color: white; }
 
-        /* --- GRID --- */
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 24px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 24px; padding-bottom: 40px; }
         .card { background: var(--glass); border: 1px solid var(--border); border-radius: 24px; padding: 32px; text-align: center; transition: var(--transition); }
+        .card.hidden { display: none; }
         .card:hover { border-color: var(--accent); transform: translateY(-8px); background: rgba(255,255,255,0.06); }
         .card-icon { width: 80px; height: 80px; border-radius: 22px; margin-bottom: 20px; object-fit: cover; cursor: pointer; }
 
-        /* --- MODAL --- */
-        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(15px); display: none; align-items: center; justify-content: center; z-index: 1000; }
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(15px); display: none; align-items: center; justify-content: center; z-index: 10000; }
         .modal.active { display: flex; }
-        .modal-content { background: var(--surface); padding: 40px; border-radius: 32px; width: 90%; max-width: 480px; border: 1px solid var(--border); }
+        .modal-content { background: #0f172a; padding: 40px; border-radius: 32px; width: 90%; max-width: 480px; border: 1px solid var(--border); }
         .preset-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
         .preset-card { padding: 16px; border-radius: 16px; background: var(--glass); display: flex; align-items: center; gap: 12px; cursor: pointer; border: 2px solid transparent; transition: var(--transition); }
         .preset-card.active { border-color: var(--accent); background: rgba(99, 102, 241, 0.1); }
-
-        .note { text-align: center; opacity: 0.4; font-size: 0.75rem; margin-top: 80px; letter-spacing: 2px; text-transform: uppercase; }
     </style>
 </head>
 <body>
@@ -116,17 +73,30 @@
     <header>
         <div class="logo"><div class="logo-box"></div> CLOAKED</div>
         <div style="display: flex; gap: 12px;">
-            <button class="btn btn-primary" onclick="Launcher.open('https://riaannn.github.io/CCL/')">DASHBOARD</button>
+            <button class="btn btn-primary" onclick="location.reload()">DASHBOARD</button>
             <button class="btn" onclick="UI.toggleModal('settingsModal', true)">DISGUISE</button>
         </div>
     </header>
 
+    <div class="search-container">
+        <input type="text" class="search-input" id="searchBar" placeholder="Search shortcuts..." oninput="UI.filterGrid()">
+    </div>
+
     <div class="action-area">
         <div class="utopia-launch-btn" onclick="Launcher.open('https://trucving.funcionalhard.com.ar/s/')">
-            <img src="https://trucving.funcionalhard.com.ar/favicon.ico" class="utopia-icon" onerror="this.src='https://via.placeholder.com/32'">
+            <img src="https://trucving.funcionalhard.com.ar/favicon.ico" style="width:32px;height:32px;border-radius:8px;" onerror="this.src='https://via.placeholder.com/32'">
             <div class="utopia-text-group">
-                <span class="utopia-sub">Primary Search</span>
-                <span class="utopia-title">UTOPIA SEARCH</span>
+                <span style="display:block; font-size:0.75rem; color:var(--text-muted); text-transform:uppercase;">Primary Search</span>
+                <span style="display:block; font-weight:800; font-size:1.1rem;">UTOPIA SEARCH</span>
+            </div>
+        </div>
+        <div class="utopia-launch-btn" onclick="Launcher.promptOpen()" style="border-style: dashed;">
+            <div style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.1);border-radius:8px;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+            </div>
+            <div class="utopia-text-group">
+                <span style="display:block; font-size:0.75rem; color:var(--text-muted); text-transform:uppercase;">Manual Entry</span>
+                <span style="display:block; font-weight:800; font-size:1.1rem;">DIRECT OPEN</span>
             </div>
         </div>
     </div>
@@ -138,7 +108,6 @@
     </div>
 
     <div class="grid" id="mainGrid"></div>
-    <div class="note">Direct Access Mode. Frame-based navigation enabled.</div>
 </div>
 
 <div class="modal" id="settingsModal">
@@ -165,8 +134,11 @@ const DATA = {
             {name: "AnuraOS", url: "https://anura.pro", icon: "https://i.imgur.com/6vvxLxR.jpeg"},
             {name: "GN Math", url: "https://blahaj.dedyn.io/gn.html", icon: "https://cdn.discordapp.com/avatars/1366573040846241894/b449678987d3a22819a5ba8a8a9cba1b.webp?size=80"}
         ],
-        games: [{name: "Example Game", url: "https://example.com", icon: ""}],
-        apps: [] // Removed UtopiaSearch from here as it's now the main button
+        games: [
+            {name: "RetroArch", url: "https://pwa.retroarch.com/", icon: "https://www.retroarch.com/favicon.ico"},
+            {name: "Example Game", url: "https://example.com", icon: ""}
+        ],
+        apps: []
     }
 };
 
@@ -174,11 +146,8 @@ const Launcher = {
     selectedPreset: JSON.parse(localStorage.getItem("preset")) || DATA.presets[0],
 
     open(url) {
-        if (!url || url === "https://") return;
-        
-        // Proxy prefixing removed - all links open directly
-        const finalUrl = url;
-
+        if (!url) return;
+        let finalUrl = this.formatUrl(url);
         const win = window.open("about:blank", "_blank");
         if (!win) return alert("Pop-up blocked!");
 
@@ -191,13 +160,70 @@ const Launcher = {
         }
 
         doc.body.style = "margin:0; padding:0; overflow:hidden; background:#000;";
+
+        const controls = doc.createElement("div");
+        controls.id = "ccl-controls";
+        controls.style = "position:fixed; bottom:20px; right:20px; display:flex; gap:8px; z-index:9999; transition: opacity 0.3s ease;";
+        
+        const btnStyle = "width:36px; height:36px; background:rgba(15,23,42,0.85); border:1px solid rgba(255,255,255,0.15); border-radius:10px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:white; backdrop-filter:blur(8px); box-shadow: 0 4px 12px rgba(0,0,0,0.3);";
+        
+        const refresh = doc.createElement("div");
+        refresh.style = btnStyle;
+        refresh.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6"></path><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>`;
+        refresh.onclick = () => { iframe.src = iframe.src; };
+
+        const search = doc.createElement("div");
+        search.style = btnStyle;
+        search.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>`;
+        search.onclick = () => {
+            const n = win.prompt("Enter URL or Search:");
+            if(n) iframe.src = this.formatUrl(n);
+        };
+
+        controls.append(refresh, search);
+
         const iframe = doc.createElement("iframe");
         iframe.src = finalUrl;
-        iframe.style = "width:100vw; height:100vh; border:none;";
+        iframe.style = "width:100vw; height:100vh; border:none; position:absolute; top:0; left:0; z-index:1;";
         iframe.setAttribute("allow", "fullscreen; autoplay; cursor-lock; clipboard-write");
-        doc.body.appendChild(iframe);
 
-        win.addEventListener('beforeunload', (e) => { e.preventDefault(); e.returnValue = ''; });
+        doc.body.append(controls, iframe);
+
+        // Advanced Fullscreen & F11 Detection
+        const updateVisibility = () => {
+            // Check 1: Native HTML5 Fullscreen (Video/Game button)
+            const isNativeFull = !!(doc.fullscreenElement || doc.webkitFullscreenElement || doc.mozFullScreenElement);
+            
+            // Check 2: F11 Detection (Window size matches screen size)
+            // We use a small buffer (5px) to account for taskbars or rounding
+            const isF11Full = (win.innerWidth >= win.screen.width - 5) && (win.innerHeight >= win.screen.height - 5);
+
+            if (isNativeFull || isF11Full) {
+                controls.style.opacity = "0";
+                controls.style.pointerEvents = "none";
+            } else {
+                controls.style.opacity = "1";
+                controls.style.pointerEvents = "auto";
+            }
+        };
+
+        // Listen for all possible changes
+        win.addEventListener('resize', updateVisibility);
+        doc.addEventListener('fullscreenchange', updateVisibility);
+        doc.addEventListener('webkitfullscreenchange', updateVisibility);
+        
+        // Final fallback loop for stubborn browsers
+        setInterval(updateVisibility, 1000);
+    },
+
+    formatUrl(url) {
+        if (!url.includes('.') && !url.startsWith('http')) return "https://www.google.com/search?q=" + encodeURIComponent(url);
+        return url.startsWith('http') ? url : "https://" + url;
+    },
+
+    promptOpen() {
+        const u = prompt("Enter URL or Search Query:");
+        if (u) this.open(u);
     },
 
     setPreset(id) {
@@ -212,18 +238,23 @@ const UI = {
         const grid = document.getElementById("mainGrid");
         grid.innerHTML = DATA.shortcuts[DATA.currentTab].map(item => `
             <div class="card">
-                <img src="${item.icon}" class="card-icon" 
-                     onclick="Launcher.open('${item.url}')" 
-                     onerror="this.src='https://via.placeholder.com/80/0f172a/ffffff?text=${item.name[0]}'">
-                <div class="card-title">${item.name}</div>
+                <img src="${item.icon}" class="card-icon" onclick="Launcher.open('${item.url}')" onerror="this.src='https://via.placeholder.com/80/0f172a/ffffff?text=${item.name[0]}'">
+                <div style="font-weight:600; margin-bottom:15px;">${item.name}</div>
                 <button class="btn" style="width:100%; font-size:12px;" onclick="UI.copyLink('${item.url}', this)">Copy Link</button>
             </div>`).join('');
     },
 
+    filterGrid() {
+        const query = document.getElementById("searchBar").value.toLowerCase();
+        document.querySelectorAll('.card').forEach(card => {
+            const name = card.querySelector('div').innerText.toLowerCase();
+            card.classList.toggle('hidden', !name.includes(query));
+        });
+    },
+
     renderPresets() {
         document.getElementById("presetGrid").innerHTML = DATA.presets.map(p => `
-            <div class="preset-card ${Launcher.selectedPreset.id === p.id ? 'active' : ''}" 
-                 onclick="Launcher.setPreset('${p.id}')">
+            <div class="preset-card ${Launcher.selectedPreset.id === p.id ? 'active' : ''}" onclick="Launcher.setPreset('${p.id}')">
                 <img src="${p.icon || 'https://via.placeholder.com/20'}" style="width:20px; border-radius:4px;">
                 <span style="font-size: 0.9rem; font-weight: 500;">${p.name}</span>
             </div>`).join('');
@@ -231,9 +262,7 @@ const UI = {
 
     switchTab(tabId) {
         DATA.currentTab = tabId;
-        document.querySelectorAll('#tabBar .tab').forEach(btn => {
-            btn.classList.toggle('active', btn.innerText.toLowerCase() === tabId);
-        });
+        document.querySelectorAll('#tabBar .tab').forEach(btn => btn.classList.toggle('active', btn.innerText.toLowerCase() === tabId));
         this.renderGrid();
     },
 
@@ -244,14 +273,13 @@ const UI = {
 
     copyLink(url, btn) {
         navigator.clipboard.writeText(url);
-        const oldText = btn.innerText;
-        btn.innerText = "COPIED!";
-        setTimeout(() => btn.innerText = oldText, 1500);
+        const t = btn.innerText; btn.innerText = "COPIED!";
+        setTimeout(() => btn.innerText = t, 1500);
     }
 };
 
-window.addEventListener('beforeunload', (e) => { e.preventDefault(); e.returnValue = ''; });
 UI.renderGrid();
+window.addEventListener('beforeunload', (e) => { e.preventDefault(); e.returnValue = ''; });
 </script>
 </body>
 </html>
