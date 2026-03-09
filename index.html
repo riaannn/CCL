@@ -16,17 +16,27 @@
             --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
+        /* Fixed the blank space issue by ensuring no overflow on body */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Inter', -apple-system, sans-serif;
             background: var(--bg-gradient);
             color: var(--text-main);
-            min-height: 100vh;
+            height: 100vh;
+            width: 100vw;
             line-height: 1.6;
-            overflow: hidden; /* Prevents scrollbars on the main dashboard */
+            overflow: hidden; 
         }
 
-        .container { max-width: 1100px; margin: 0 auto; padding: 40px 20px; height: 100vh; overflow-y: auto; }
+        .container { 
+            max-width: 1100px; 
+            margin: 0 auto; 
+            padding: 40px 20px; 
+            height: 100%; 
+            overflow-y: auto; 
+            overflow-x: hidden; /* Prevent horizontal scroll */
+        }
+        
         header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 40px; }
         .logo { display: flex; align-items: center; gap: 12px; font-size: 1.4rem; font-weight: 800; text-transform: uppercase; }
         .logo-box { width: 32px; height: 32px; background: var(--accent); border-radius: 8px; box-shadow: 0 0 20px rgba(99, 102, 241, 0.4); }
@@ -73,8 +83,8 @@
     <header>
         <div class="logo"><div class="logo-box"></div> CLOAKED</div>
         <div style="display: flex; gap: 12px;">
-            <button class="btn btn-primary" onclick="location.reload()">DASHBOARD</button>
-            <button class="btn" onclick="UI.toggleModal('settingsModal', true)">DISGUISE</button>
+            <button class="btn btn-primary" onclick="location.reload()">RELOAD</button>
+            <button class="btn" onclick="UI.toggleModal('settingsModal', true)">CLOAK</button>
         </div>
     </header>
 
@@ -132,11 +142,10 @@ const DATA = {
         web: [
             {name: "Truffled", url: "https://1563.px.meridianoshop.com.br/", icon: "https://i.imgur.com/Avqlk5Q.jpeg"},
             {name: "AnuraOS", url: "https://anura.pro", icon: "https://i.imgur.com/6vvxLxR.jpeg"},
-            {name: "GN Math", url: "https://blahaj.dedyn.io/gn.html", icon: "https://cdn.discordapp.com/avatars/1366573040846241894/b449678987d3a22819a5ba8a8a9cba1b.webp?size=80"}
         ],
         games: [
-            {name: "RetroArch", url: "https://pwa.retroarch.com/", icon: "https://www.retroarch.com/favicon.ico"},
-            {name: "Example Game", url: "https://example.com", icon: ""}
+            {name: "GN Math", url: "https://blahaj.dedyn.io/gn.html", icon: "https://cdn.discordapp.com/avatars/1366573040846241894/b449678987d3a22819a5ba8a8a9cba1b.webp?size=80"},
+            {name: "Example Game", url: "https://example.com", icon: ""},
         ],
         apps: []
     }
@@ -159,7 +168,8 @@ const Launcher = {
             doc.head.appendChild(link);
         }
 
-        doc.body.style = "margin:0; padding:0; overflow:hidden; background:#000;";
+        // Updated Styles for ChromeOS edge-to-edge
+        doc.body.style = "margin:0; padding:0; overflow:hidden; background:#000; width:100vw; height:100vh;";
 
         const controls = doc.createElement("div");
         controls.id = "ccl-controls";
@@ -184,18 +194,14 @@ const Launcher = {
 
         const iframe = doc.createElement("iframe");
         iframe.src = finalUrl;
-        iframe.style = "width:100vw; height:100vh; border:none; position:absolute; top:0; left:0; z-index:1;";
+        // Fix: Use absolute positioning and 100% to fill ChromeOS screen perfectly
+        iframe.style = "width:100%; height:100%; border:none; position:fixed; top:0; left:0; z-index:1;";
         iframe.setAttribute("allow", "fullscreen; autoplay; cursor-lock; clipboard-write");
 
         doc.body.append(controls, iframe);
 
-        // Advanced Fullscreen & F11 Detection
         const updateVisibility = () => {
-            // Check 1: Native HTML5 Fullscreen (Video/Game button)
             const isNativeFull = !!(doc.fullscreenElement || doc.webkitFullscreenElement || doc.mozFullScreenElement);
-            
-            // Check 2: F11 Detection (Window size matches screen size)
-            // We use a small buffer (5px) to account for taskbars or rounding
             const isF11Full = (win.innerWidth >= win.screen.width - 5) && (win.innerHeight >= win.screen.height - 5);
 
             if (isNativeFull || isF11Full) {
@@ -207,12 +213,9 @@ const Launcher = {
             }
         };
 
-        // Listen for all possible changes
         win.addEventListener('resize', updateVisibility);
         doc.addEventListener('fullscreenchange', updateVisibility);
         doc.addEventListener('webkitfullscreenchange', updateVisibility);
-        
-        // Final fallback loop for stubborn browsers
         setInterval(updateVisibility, 1000);
     },
 
