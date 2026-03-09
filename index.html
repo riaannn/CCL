@@ -5,133 +5,279 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Custom Cloaked Launcher</title>
     <style>
+        /* --- Base Styles --- */
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #0a0e27; color: #e8eaf6;
+            background: #0a0e27; 
+            color: #e8eaf6;
             min-height: 100vh;
             overflow-x: hidden;
+            line-height: 1.5;
         }
-        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
 
+        .container { 
+            max-width: 1200px; 
+            margin: 0 auto; 
+            padding: 40px 20px; 
+        }
+
+        /* --- Header Section --- */
         header {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 20px 0 40px; border-bottom: 1px solid rgba(147, 197, 253, .1);
-            margin-bottom: 30px;
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between;
+            padding-bottom: 30px; 
+            border-bottom: 1px solid rgba(147, 197, 253, .1);
+            margin-bottom: 40px;
         }
+
         .logo {
-            display: flex; align-items: center; gap: 12px; font-size: 22px;
-            font-weight: 700; letter-spacing: -0.5px;
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+            font-size: 24px;
+            font-weight: 800; 
+            letter-spacing: -1px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent;
         }
+
         .logo-box {
-            width: 32px; height: 32px; border: 2px solid #667eea; border-radius: 8px;
+            width: 32px; 
+            height: 32px; 
+            border: 2px solid #667eea; 
+            border-radius: 8px;
             position: relative;
         }
+
         .logo-box::after {
-            content: ''; position: absolute; inset: 6px; background: #764ba2; border-radius: 2px;
+            content: ''; 
+            position: absolute; 
+            inset: 6px; 
+            background: #764ba2; 
+            border-radius: 2px;
         }
 
-        .header-actions { display: flex; gap: 10px; }
+        .header-actions { display: flex; gap: 12px; }
 
-        .settings-btn {
-            background: rgba(147, 197, 253, .05); border: 1px solid rgba(147, 197, 253, .2);
-            padding: 10px 20px; border-radius: 10px; cursor: pointer; color: #e8eaf6;
-            font-size: 13px; font-weight: 500; transition: 0.2s;
+        /* --- Buttons --- */
+        .btn {
+            background: rgba(147, 197, 253, .05); 
+            border: 1px solid rgba(147, 197, 253, .2);
+            padding: 10px 20px; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            color: #e8eaf6;
+            font-size: 13px; 
+            font-weight: 600; 
+            transition: all 0.2s ease;
         }
-        .settings-btn:hover { background: rgba(147, 197, 253, .15); border-color: #667eea; }
+
+        .btn:hover { 
+            background: rgba(147, 197, 253, .15); 
+            border-color: #667eea; 
+            transform: translateY(-1px);
+        }
         
-        /* Specialized style for the Open Cloaked shortcut button */
-        .primary-btn {
-            background: rgba(102, 126, 234, 0.15); border: 1px solid rgba(102, 126, 234, 0.4);
+        .btn-primary {
+            background: rgba(102, 126, 234, 0.15); 
+            border: 1px solid rgba(102, 126, 234, 0.4);
             color: #a5b4fc;
         }
-        .primary-btn:hover { background: rgba(102, 126, 234, 0.25); border-color: #667eea; color: #fff; }
 
-        /* Search Bar */
+        /* --- Search Bar --- */
         .search-container {
-            position: relative; max-width: 600px; margin: 0 auto 50px;
-            display: flex; gap: 10px;
+            max-width: 600px; 
+            margin: 0 auto 50px;
+            display: flex; 
+            gap: 12px;
         }
+
         .search-input {
-            flex: 1; padding: 16px 20px; background: rgba(147, 197, 253, .03);
-            border: 1px solid rgba(147, 197, 253, .2); border-radius: 12px;
-            color: #e8eaf6; font-size: 15px; transition: 0.3s;
+            flex: 1; 
+            padding: 16px 20px; 
+            background: rgba(147, 197, 253, .03);
+            border: 1px solid rgba(147, 197, 253, .2); 
+            border-radius: 14px;
+            color: #e8eaf6; 
+            font-size: 15px; 
+            transition: 0.3s;
         }
-        .search-input:focus { outline: none; border-color: #667eea; background: rgba(147, 197, 253, .07); }
-        .search-btn {
-            padding: 0 28px; border-radius: 12px; border: none;
-            background: #e8eaf6; color: #0a0e27;
-            font-size: 14px; font-weight: 700; cursor: pointer; transition: 0.2s;
-        }
-        .search-btn:hover { background: #ffffff; transform: translateY(-1px); }
 
-        /* Tabs */
+        .search-input:focus { 
+            outline: none; 
+            border-color: #667eea; 
+            background: rgba(147, 197, 253, .07); 
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+
+        .launch-btn {
+            padding: 0 30px; 
+            border-radius: 14px; 
+            border: none;
+            background: #e8eaf6; 
+            color: #0a0e27;
+            font-size: 14px; 
+            font-weight: 700; 
+            cursor: pointer; 
+            transition: 0.2s;
+        }
+
+        .launch-btn:hover { background: #fff; transform: translateY(-1px); }
+
+        /* --- Tabs --- */
+        .tabs-wrapper {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 40px;
+        }
+
         .tabs {
-            display: flex; gap: 5px; margin-bottom: 32px; padding: 5px;
-            background: rgba(147, 197, 253, .05); border-radius: 12px; width: fit-content;
+            display: flex; 
+            gap: 8px; 
+            padding: 6px;
+            background: rgba(147, 197, 253, .05); 
+            border-radius: 14px;
         }
+
         .tab { 
-            padding: 10px 20px; border-radius: 8px; cursor: pointer; 
-            transition: 0.2s; font-size: 14px; font-weight: 500; color: rgba(232, 234, 246, 0.6);
+            padding: 10px 24px; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            transition: 0.3s; 
+            font-size: 14px; 
+            font-weight: 600; 
+            color: rgba(232, 234, 246, 0.5);
         }
-        .tab:hover { color: #fff; }
-        .tab.active { background: #1a1f3a; color: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
 
-        /* Grid & Cards */
+        .tab.active { 
+            background: #1a1f3a; 
+            color: #fff; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3); 
+        }
+
+        /* --- Grid & Cards --- */
         .grid {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-            gap: 25px; margin-bottom: 40px;
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 25px; 
         }
+
         .card {
-            background: rgba(147, 197, 253, .03); border: 1px solid rgba(147, 197, 253, .1);
-            border-radius: 16px; padding: 20px; text-align: center; transition: .3s;
-            display: flex; flex-direction: column; min-height: 240px;
+            background: rgba(147, 197, 253, .03); 
+            border: 1px solid rgba(147, 197, 253, .1);
+            border-radius: 20px; 
+            padding: 24px; 
+            text-align: center; 
+            transition: all .3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex; 
+            flex-direction: column; 
+            align-items: center;
         }
-        .card:hover { transform: translateY(-5px); border-color: rgba(102, 126, 234, 0.5); background: rgba(147, 197, 253, .06); }
+
+        .card:hover { 
+            transform: translateY(-8px); 
+            border-color: rgba(102, 126, 234, 0.5); 
+            background: rgba(147, 197, 253, .06); 
+        }
+
         .card-icon {
-            width: 80px; height: 80px; border-radius: 12px;
-            object-fit: cover; margin: 0 auto 15px; cursor: pointer;
-            filter: grayscale(20%); transition: 0.3s;
+            width: 85px; 
+            height: 85px; 
+            border-radius: 18px;
+            object-fit: cover; 
+            margin-bottom: 18px; 
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
         }
-        .card:hover .card-icon { filter: grayscale(0%); transform: scale(1.05); }
-        .card-title { font-size: 15px; font-weight: 600; margin-bottom: 12px; color: #fff; }
 
-        .link-preview {
-            display: none; font-size: 11px; color: rgba(162, 168, 211, 0.7);
-            word-break: break-all; margin-top: auto;
+        .card:hover .card-icon { transform: scale(1.08); }
+
+        .card-title { 
+            font-size: 16px; 
+            font-weight: 700; 
+            margin-bottom: 15px; 
+            color: #fff; 
         }
-        .card:hover .link-preview { display: block; }
+
         .copy-link-btn {
-            margin-top: 10px; width: 100%; padding: 8px; font-size: 11px;
-            border: 1px solid rgba(147, 197, 253, 0.2); border-radius: 6px; 
-            background: transparent; color: #e8eaf6; cursor: pointer; transition: 0.2s;
+            width: 100%; 
+            padding: 8px; 
+            font-size: 11px;
+            border: 1px solid rgba(147, 197, 253, 0.1); 
+            border-radius: 8px; 
+            background: rgba(255,255,255,0.02); 
+            color: rgba(232, 234, 246, 0.6); 
+            cursor: pointer; 
+            transition: 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
-        .copy-link-btn:hover { background: #e8eaf6; color: #0a0e27; }
 
-        /* Modal */
+        .copy-link-btn:hover { 
+            background: #e8eaf6; 
+            color: #0a0e27; 
+            border-color: #fff;
+        }
+
+        /* --- Modal --- */
         .modal {
-            position: fixed; inset: 0; background: rgba(5, 7, 20, 0.9);
-            display: none; align-items: center; justify-content: center; z-index: 1000;
-            backdrop-filter: blur(4px);
+            position: fixed; inset: 0; 
+            background: rgba(5, 7, 20, 0.85);
+            display: none; align-items: center; justify-content: center; 
+            z-index: 1000;
+            backdrop-filter: blur(8px);
         }
-        .modal.active { display: flex; }
-        .modal-content {
-            background: #111633; padding: 40px; border-radius: 20px;
-            width: 90%; max-width: 500px; border: 1px solid rgba(147, 197, 253, .1);
-        }
-        .preset-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-        .preset-card {
-            padding: 15px; border-radius: 10px; background: rgba(255, 255, 255, 0.03);
-            display: flex; align-items: center; gap: 12px; cursor: pointer; 
-            border: 1px solid transparent; transition: 0.2s;
-        }
-        .preset-card.active { border-color: #667eea; background: rgba(102, 126, 234, 0.1); }
-        .preset-icon { width: 20px; height: 20px; border-radius: 4px; }
-        .preset-name { font-size: 13px; font-weight: 500; }
 
-        .note { text-align: center; font-size: 11px; color: rgba(232, 234, 246, 0.3); margin-top: 40px; text-transform: uppercase; letter-spacing: 1px; }
+        .modal.active { display: flex; }
+
+        .modal-content {
+            background: #111633; 
+            padding: 35px; 
+            border-radius: 24px;
+            width: 90%; 
+            max-width: 450px; 
+            border: 1px solid rgba(147, 197, 253, .1);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+
+        .preset-grid { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 12px; 
+        }
+
+        .preset-card {
+            padding: 14px; 
+            border-radius: 12px; 
+            background: rgba(255, 255, 255, 0.03);
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+            cursor: pointer; 
+            border: 1px solid transparent; 
+            transition: 0.2s;
+        }
+
+        .preset-card.active { 
+            border-color: #667eea; 
+            background: rgba(102, 126, 234, 0.1); 
+        }
+
+        .preset-icon { width: 22px; height: 22px; border-radius: 4px; }
+        
+        .note { 
+            text-align: center; 
+            font-size: 10px; 
+            color: rgba(232, 234, 246, 0.25); 
+            margin-top: 50px; 
+            text-transform: uppercase; 
+            letter-spacing: 1.5px; 
+        }
     </style>
 </head>
 <body>
@@ -143,50 +289,62 @@
             CLOAKED
         </div>
         <div class="header-actions">
-            <button class="settings-btn primary-btn" onclick="openCloaked('https://riaannn.github.io/CCL/')">OPEN CLOAKED</button>
-            <button class="settings-btn" onclick="openSettings()">TAB DISGUISE</button>
+            <button class="btn btn-primary" onclick="openCloaked('https://riaannn.github.io/CCL/')">OPEN CLOAKED</button>
+            <button class="btn" onclick="openSettings()">TAB DISGUISE</button>
         </div>
     </header>
 
     <div class="search-container">
         <input id="urlInput" class="search-input" placeholder="Enter Destination URL" value="https://">
-        <button class="search-btn" onclick="openFromUrl()">LAUNCH</button>
+        <button class="launch-btn" onclick="openFromUrl()">LAUNCH</button>
     </div>
 
-    <div class="tabs">
-        <div class="tab active" onclick="switchTab('web')" data-tab="web">WEB</div>
-        <div class="tab" onclick="switchTab('games')" data-tab="games">GAMES</div>
-        <div class="tab" onclick="switchTab('apps')" data-tab="apps">APPS</div>
+    <div class="tabs-wrapper">
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('web')" data-tab="web">WEB</div>
+            <div class="tab" onclick="switchTab('games')" data-tab="games">GAMES</div>
+            <div class="tab" onclick="switchTab('apps')" data-tab="apps">APPS</div>
+        </div>
     </div>
 
     <div class="grid" id="grid"></div>
 
     <div class="note">
-        Connection may be refused by sites with strict frame headers
+        Strict frame headers may prevent some sites from loading
     </div>
 </div>
 
 <div class="modal" id="settingsModal">
     <div class="modal-content">
-        <h3 style="margin-bottom:25px; font-size: 18px; letter-spacing: 1px;">SELECT DISGUISE</h3>
+        <h3 style="margin-bottom:20px; font-size: 18px; text-align: center;">TAB DISGUISE</h3>
         <div class="preset-grid" id="presetGrid"></div>
-        <button class="search-btn" style="width:100%; margin-top:30px; padding:15px;" onclick="closeSettings()">CONFIRM SELECTION</button>
+        <button class="launch-btn" style="width:100%; margin-top:25px; padding:16px;" onclick="closeSettings()">SAVE CHANGES</button>
     </div>
 </div>
 
 <script>
-/**
- * EXIT PROTECTION LOGIC
- */
-function armProtection() {
-    window.addEventListener("beforeunload", (event) => {
-        event.preventDefault();
-        event.returnValue = ""; 
-    });
-}
-window.addEventListener("mousedown", armProtection, { once: true });
-window.addEventListener("keydown", armProtection, { once: true });
+/* --- IMPROVED EXIT PROTECTION --- */
+function armProtection(targetWindow) {
+    const handleUnload = (e) => {
+        e.preventDefault();
+        e.returnValue = ''; // Required for most browsers
+        return '';
+    };
 
+    const activate = () => {
+        targetWindow.addEventListener('beforeunload', handleUnload);
+    };
+
+    // Listen for any interaction to satisfy browser security
+    targetWindow.addEventListener('mousedown', activate, { once: true });
+    targetWindow.addEventListener('keydown', activate, { once: true });
+    targetWindow.addEventListener('touchstart', activate, { once: true });
+}
+
+// Arm the main window
+armProtection(window);
+
+/* --- DATA & STATE --- */
 let currentTab = "web";
 const presets = [
     {id:"google", name:"Google", title:"Google", icon:"https://www.google.com/favicon.ico"},
@@ -198,10 +356,6 @@ const presets = [
 
 let selectedPreset = JSON.parse(localStorage.getItem("preset")) || presets[0];
 
-/**
- * DIRECTORY DATA
- * Edit the sections below to add your games and apps
- */
 const shortcuts = {
     web: [
         {name: "Truffled", url: "https://1563.px.meridianoshop.com.br/", icon: "https://i.imgur.com/Avqlk5Q.jpeg"},
@@ -217,38 +371,94 @@ const shortcuts = {
     ]
 };
 
+/* --- CORE FUNCTIONS --- */
 function renderGrid() {
     const grid = document.getElementById("grid");
     const items = shortcuts[currentTab];
     
     if(!items.length) {
-        grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px;opacity:.3;font-size:12px;">DIRECTORY EMPTY</div>`;
+        grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:100px;opacity:.2;font-size:13px;letter-spacing:2px;">NO CONTENT FOUND</div>`;
         return;
     }
 
     grid.innerHTML = items.map(item => {
-        // Creates a text-based placeholder if no icon URL is provided or if it fails to load
         const iconHtml = item.icon 
-            ? `<img src="${item.icon}" class="card-icon" onclick="openCloaked('${item.url}')" onerror="this.outerHTML='<div class=\'card-icon\' onclick=\'openCloaked(\\\'${item.url}\\\')\' style=\'display:flex;align-items:center;justify-content:center;background:rgba(147,197,253,0.1);font-weight:bold;font-size:24px;color:#667eea\'>${item.name[0]}</div>'">`
-            : `<div class="card-icon" onclick="openCloaked('${item.url}')" style="display:flex;align-items:center;justify-content:center;background:rgba(147,197,253,0.1);font-weight:bold;font-size:24px;color:#667eea">${item.name[0]}</div>`;
+            ? `<img src="${item.icon}" class="card-icon" onclick="openCloaked('${item.url}')" onerror="this.outerHTML='<div class=\'card-icon\' onclick=\'openCloaked(\\\"${item.url}\\\")\' style=\'display:flex;align-items:center;justify-content:center;background:rgba(147,197,253,0.05);font-weight:bold;font-size:28px;color:#667eea\'>${item.name[0]}</div>'">`
+            : `<div class="card-icon" onclick="openCloaked('${item.url}')" style="display:flex;align-items:center;justify-content:center;background:rgba(147,197,253,0.05);font-weight:bold;font-size:28px;color:#667eea">${item.name[0]}</div>`;
 
         return `
             <div class="card">
                 ${iconHtml}
                 <div class="card-title">${item.name}</div>
-                <div class="link-preview">
-                    <button class="copy-link-btn" onclick="copyShortcutLink('${item.url}', this)">COPY URL</button>
-                </div>
+                <button class="copy-link-btn" onclick="copyShortcutLink('${item.url}', this)">Copy URL</button>
             </div>`;
     }).join('');
 }
 
+function switchTab(tab) {
+    currentTab = tab;
+    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+    renderGrid();
+}
+
+function openCloaked(url) {
+    const win = window.open("about:blank", "_blank");
+    if(!win) return alert("Pop-up blocked!");
+
+    // Apply protection to the new window specifically
+    armProtection(win);
+
+    const doc = win.document;
+    
+    // Tab Disguise
+    if(selectedPreset.id !== "none") {
+        doc.title = selectedPreset.title;
+        const link = doc.createElement("link");
+        link.rel = "icon";
+        link.href = selectedPreset.icon;
+        doc.head.appendChild(link);
+    }
+
+    doc.body.style = "margin:0; overflow:hidden; background:#000;";
+
+    const iframe = doc.createElement("iframe");
+    iframe.src = url;
+    iframe.style = "width:100vw; height:100vh; border:none;";
+    
+    // Fullscreen support
+    iframe.setAttribute("allow", "fullscreen; autoplay; cursor-lock; clipboard-write");
+    iframe.setAttribute("allowfullscreen", "true");
+    
+    doc.body.appendChild(iframe);
+
+    // Floating Nav
+    const controls = doc.createElement("div");
+    controls.style = "position:fixed; bottom:20px; right:20px; display:flex; gap:8px; z-index:9999;";
+
+    const createBtn = (txt, fn) => {
+        const b = doc.createElement("button");
+        b.textContent = txt;
+        b.style = "padding:10px 15px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(10,14,39,0.85); color:white; cursor:pointer; font-size:10px; font-weight:bold; backdrop-filter:blur(5px);";
+        b.onclick = fn;
+        return b;
+    };
+
+    controls.appendChild(createBtn("REFRESH", () => iframe.src = iframe.src));
+    controls.appendChild(createBtn("NAVIGATE", () => {
+        const u = win.prompt("Enter URL:", iframe.src);
+        if(u) iframe.src = u;
+    }));
+
+    doc.body.appendChild(controls);
+}
+
+/* --- SETTINGS --- */
 function renderPresets() {
     const grid = document.getElementById("presetGrid");
     grid.innerHTML = presets.map(p => `
         <div class="preset-card ${selectedPreset.id === p.id ? "active" : ""}" onclick="selectPreset('${p.id}')">
             ${p.icon ? `<img src="${p.icon}" class="preset-icon">` : `<div class="preset-icon" style="background:#333"></div>`}
-            <div class="preset-name">${p.name}</div>
+            <div class="preset-name" style="font-size:12px; font-weight:600;">${p.name}</div>
         </div>`).join('');
 }
 
@@ -261,22 +471,12 @@ function selectPreset(id) {
 function openSettings() { renderPresets(); document.getElementById("settingsModal").classList.add("active"); }
 function closeSettings() { document.getElementById("settingsModal").classList.remove("active"); }
 
-function switchTab(tab) {
-    currentTab = tab;
-    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
-    renderGrid();
-}
-
 function copyShortcutLink(url, btn) {
     event.stopPropagation();
     navigator.clipboard.writeText(url).then(() => {
-        const prev = btn.textContent;
-        btn.textContent = "COPIED";
-        btn.style.borderColor = "#667eea";
-        setTimeout(() => {
-            btn.textContent = prev;
-            btn.style.borderColor = "";
-        }, 1500);
+        const old = btn.textContent;
+        btn.textContent = "COPIED!";
+        setTimeout(() => btn.textContent = old, 1500);
     });
 }
 
@@ -285,57 +485,6 @@ function openFromUrl() {
     if(url && url !== "https://") openCloaked(url);
 }
 
-function openCloaked(url) {
-    const win = window.open("about:blank", "_blank");
-    if(!win) {
-        alert("Pop-up blocked! Please allow pop-ups to launch cloaked windows.");
-        return;
-    }
-
-    const doc = win.document;
-    
-    // Apply Tab Disguise
-    if(selectedPreset.id !== "none") {
-        doc.title = selectedPreset.title;
-        const link = doc.createElement("link");
-        link.rel = "icon";
-        link.href = selectedPreset.icon;
-        doc.head.appendChild(link);
-    }
-
-    doc.body.style.margin = "0";
-    doc.body.style.overflow = "hidden";
-    doc.body.style.background = "#000";
-
-    const iframe = doc.createElement("iframe");
-    iframe.src = url;
-    iframe.style.width = "100vw";
-    iframe.style.height = "100vh";
-    iframe.style.border = "none";
-    doc.body.appendChild(iframe);
-
-    // Floating Nav Controls inside the new window
-    const controls = doc.createElement("div");
-    controls.style = "position:fixed;bottom:25px;right:25px;display:flex;gap:10px;z-index:9999;";
-
-    function createNavBtn(text, action) {
-        const b = doc.createElement("button");
-        b.textContent = text;
-        b.style = "padding:12px 18px;border-radius:8px;border:none;background:rgba(10,14,39,0.9);color:white;cursor:pointer;font-size:11px;font-weight:700;backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.1)";
-        b.onclick = action;
-        return b;
-    }
-
-    controls.appendChild(createNavBtn("REFRESH", () => iframe.src = iframe.src));
-    controls.appendChild(createNavBtn("NAVIGATE", () => {
-        const u = win.prompt("Enter URL:", iframe.src);
-        if(u) iframe.src = u;
-    }));
-
-    doc.body.appendChild(controls);
-}
-
-// Initial Render
 renderGrid();
 </script>
 </body>
