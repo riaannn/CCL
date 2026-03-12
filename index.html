@@ -159,6 +159,12 @@ const DATA = {
     }
 };
 
+// Add Leave Site protection to the main dashboard
+window.addEventListener('beforeunload', (e) => {
+    e.preventDefault();
+    e.returnValue = '';
+});
+
 const Launcher = {
     selectedPreset: JSON.parse(localStorage.getItem("preset")) || DATA.presets[1],
 
@@ -187,6 +193,12 @@ const Launcher = {
                     sandbox="allow-forms allow-modals allow-orientation-lock allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-presentation allow-scripts allow-same-origin">
                 </iframe>
                 <script>
+                    // Leave site protection inside the cloak tab
+                    window.addEventListener('beforeunload', (e) => {
+                        e.preventDefault();
+                        e.returnValue = '';
+                    });
+
                     window.onkeydown = function(e) {
                         if (e.key === "Escape") window.location.href = "https://classroom.google.com";
                     };
@@ -198,12 +210,19 @@ const Launcher = {
     },
 
     formatUrl(url) {
-        if (!url.includes('.') && !url.startsWith('http')) return "https://www.google.com/search?q=" + encodeURIComponent(url);
-        return url.startsWith('http') ? url : "https://" + url;
+        url = url.trim();
+        // Regex to check if it's a likely URL (contains a dot, no spaces)
+        const isUrlPattern = /^https?:\/\/.*/i.test(url) || (url.includes('.') && !url.includes(' '));
+        
+        if (isUrlPattern) {
+            return url.startsWith('http') ? url : "https://" + url;
+        }
+        // Fallback to Search if not a valid URL pattern to avoid Connection Reset
+        return "https://www.google.com/search?q=" + encodeURIComponent(url);
     },
 
     promptOpen() {
-        const u = prompt("Enter URL:");
+        const u = prompt("Enter URL or search term:");
         if (u) this.open(u);
     },
 
@@ -253,18 +272,11 @@ const UI = {
     },
 
     copyLink(url, btn) {
-        const textArea = document.createElement("textarea");
-        textArea.value = url;
-        textArea.style.position = "fixed";
-        textArea.style.left = "-9999px";
-        document.body.appendChild(textArea);
-        textArea.focus();
-        textArea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textArea);
-        const t = btn.innerText;
-        btn.innerText = "COPIED!";
-        setTimeout(() => btn.innerText = t, 1500);
+        navigator.clipboard.writeText(url).then(() => {
+            const t = btn.innerText;
+            btn.innerText = "COPIED!";
+            setTimeout(() => btn.innerText = t, 1500);
+        });
     }
 };
 
