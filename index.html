@@ -18,7 +18,7 @@
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Inter', -apple-system, sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             background: var(--bg-gradient);
             color: var(--text-main);
             height: 100vh;
@@ -37,7 +37,7 @@
         }
         
         header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 40px; }
-        .logo { display: flex; align-items: center; gap: 12px; font-size: 1.4rem; font-weight: 800; text-transform: uppercase; }
+        .logo { display: flex; align-items: center; gap: 12px; font-size: 1.4rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
         .logo-box { width: 32px; height: 32px; background: var(--accent); border-radius: 8px; box-shadow: 0 0 20px rgba(99, 102, 241, 0.4); }
 
         .search-container { margin-bottom: 40px; display: flex; justify-content: center; }
@@ -46,33 +46,46 @@
             background: var(--glass); border: 1px solid var(--border); color: white;
             font-size: 1rem; outline: none; transition: var(--transition);
         }
-        .search-input:focus { border-color: var(--accent); background: rgba(255,255,255,0.06); }
+        .search-input:focus { border-color: var(--accent); background: rgba(255,255,255,0.06); box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1); }
 
-        .action-area { display: flex; justify-content: center; gap: 15px; margin-bottom: 60px; flex-wrap: wrap; }
+        .action-area { display: flex; flex-direction: column; align-items: center; gap: 20px; margin-bottom: 60px; }
+        
+        .warning-text {
+            max-width: 500px;
+            text-align: center;
+            color: #fca5a5;
+            font-size: 0.85rem;
+            background: rgba(239, 68, 68, 0.05);
+            padding: 12px 20px;
+            border-radius: 12px;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
         .utopia-launch-btn {
             display: flex; align-items: center; gap: 12px; background: var(--glass);
-            border: 1px solid var(--border); padding: 12px 24px; border-radius: 20px;
+            border: 1px dashed var(--border); padding: 14px 32px; border-radius: 20px;
             cursor: pointer; transition: var(--transition); backdrop-filter: blur(10px);
             text-decoration: none; color: white;
         }
         .utopia-launch-btn:hover { border-color: var(--accent); transform: translateY(-3px); background: rgba(99, 102, 241, 0.1); }
 
         .tabs { display: flex; justify-content: center; gap: 12px; margin-bottom: 40px; }
-        .btn { padding: 10px 24px; border-radius: 12px; cursor: pointer; font-weight: 600; border: 1px solid var(--border); background: var(--glass); color: var(--text-main); transition: var(--transition); }
+        .btn { padding: 10px 24px; border-radius: 12px; cursor: pointer; font-weight: 600; border: 1px solid var(--border); background: var(--glass); color: var(--text-main); transition: var(--transition); outline: none; }
         .btn-primary { background: var(--accent); border: none; color: white; }
-        .tab.active { background: var(--accent); color: white; }
+        .tab.active { background: var(--accent); color: white; border-color: transparent; }
 
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 24px; padding-bottom: 40px; }
-        .card { background: var(--glass); border: 1px solid var(--border); border-radius: 24px; padding: 32px; text-align: center; transition: var(--transition); }
+        .card { background: var(--glass); border: 1px solid var(--border); border-radius: 24px; padding: 32px; text-align: center; transition: var(--transition); position: relative; }
         .card.hidden { display: none; }
         .card:hover { border-color: var(--accent); transform: translateY(-8px); background: rgba(255,255,255,0.06); }
-        .card-icon { width: 80px; height: 80px; border-radius: 22px; margin-bottom: 20px; object-fit: cover; cursor: pointer; }
+        .card-icon { width: 80px; height: 80px; border-radius: 22px; margin-bottom: 20px; object-fit: cover; cursor: pointer; transition: var(--transition); }
 
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(15px); display: none; align-items: center; justify-content: center; z-index: 10000; }
         .modal.active { display: flex; }
         .modal-content { background: #0f172a; padding: 40px; border-radius: 32px; width: 90%; max-width: 480px; border: 1px solid var(--border); }
         .preset-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
         .preset-card { padding: 16px; border-radius: 16px; background: var(--glass); display: flex; align-items: center; gap: 12px; cursor: pointer; border: 2px solid transparent; transition: var(--transition); }
+        .preset-card.active { border-color: var(--accent); background: rgba(99, 102, 241, 0.1); }
     </style>
 </head>
 <body>
@@ -87,31 +100,19 @@
     </header>
 
     <div class="search-container">
-        <input type="text" class="search-input" id="searchBar" placeholder="Search shortcuts..." oninput="UI.filterGrid()">
+        <input type="text" class="search-input" id="searchBar" placeholder="Search saved shortcuts..." oninput="UI.filterGrid()">
     </div>
 
     <div class="action-area">
-        <div class="utopia-launch-btn" onclick="Launcher.open('https://www.watchparty.me/watch/harsh-stranger-come')">
-            <img src="https://watchparty.me/favicon.ico" style="width:24px;height:24px;border-radius:4px;">
-            <div class="utopia-text-group">
-                <span style="display:block; font-size:0.65rem; color:var(--text-muted); text-transform:uppercase;">Cloud Stream</span>
-                <span style="display:block; font-weight:800; font-size:0.95rem;">VIRTUAL BROWSER</span>
-            </div>
+        <div class="warning-text">
+            <b>SECURITY WARNING:</b> Most popular sites (Google, Discord, YouTube, etc.) use strict security headers that will block direct iframe loading.
         </div>
 
-        <div class="utopia-launch-btn" onclick="Launcher.open('https://trucving.funcionalhard.com.ar/s/')">
-            <img src="https://trucving.funcionalhard.com.ar/favicon.ico" style="width:24px;height:24px;border-radius:4px;">
-            <div class="utopia-text-group">
-                <span style="display:block; font-size:0.65rem; color:var(--text-muted); text-transform:uppercase;">Primary Proxy</span>
-                <span style="display:block; font-weight:800; font-size:0.95rem;">UTOPIA SEARCH</span>
-            </div>
-        </div>
-
-        <div class="utopia-launch-btn" onclick="Launcher.promptOpen()" style="border-style: dashed;">
+        <div class="utopia-launch-btn" onclick="Launcher.promptOpen()">
             <img src="https://www.gstatic.com/images/icons/material/system/2x/language_white_24dp.png" style="width:24px;height:24px;opacity:0.8;">
             <div class="utopia-text-group">
-                <span style="display:block; font-size:0.65rem; color:var(--text-muted); text-transform:uppercase;">Manual</span>
-                <span style="display:block; font-weight:800; font-size:0.95rem;">DIRECT URL</span>
+                <span style="display:block; font-size:0.65rem; color:var(--text-muted); text-transform:uppercase;">Manual Access</span>
+                <span style="display:block; font-weight:800; font-size:1.1rem;">OPEN DIRECT URL</span>
             </div>
         </div>
     </div>
@@ -146,23 +147,17 @@ const DATA = {
         web: [
             {name: "Truffled", url: "https://computerlab.strangled.net/", icon: "https://i.imgur.com/Avqlk5Q.jpeg"},
             {name: "AnuraOS", url: "https://anura.pro", icon: "https://i.imgur.com/6vvxLxR.jpeg"},
-            {name: "Interstellar", url: "	snackbudget.strangled.net", icon: "https://i.imgur.com/EFMJhAC.png"},
+            {name: "Space", url: "https://gointospace.app", icon: "https://gointospace.app/assets/logo.webp"}
         ],
         games: [
             {name: "GN Math", url: "https://blahaj.dedyn.io/gn.html", icon: "https://cdn.discordapp.com/avatars/1366573040846241894/b449678987d3a22819a5ba8a8a9cba1b.webp?size=80"},
-            {name: "Angry Birds Epic", url: "https://truffled.lol/games/Epic/index.html", icon: "https://i.imgur.com/ql7Gz9e.jpeg"},
+            {name: "Angry Birds Epic", url: "https://truffled.lol/games/Epic/index.html", icon: "https://i.imgur.com/ql7Gz9e.jpeg"}
         ],
         apps: [
-            {name: "GeforceNow", url: "https://universityeducation.camdvr.org/a/hvtrs8%2F-pna%7B.eedopcgnmw%2Ccmm-mcln%2F", icon: "https://i.imgur.com/T65qqQJ.png"},
+            {name: "GeforceNow", url: "https://universityeducation.camdvr.org/a/hvtrs8%2F-pna%7B.eedopcgnmw%2Ccmm-mcln%2F", icon: "https://i.imgur.com/T65qqQJ.png"}
         ]
     }
 };
-
-// Add Leave Site protection to the main dashboard
-window.addEventListener('beforeunload', (e) => {
-    e.preventDefault();
-    e.returnValue = '';
-});
 
 const Launcher = {
     selectedPreset: JSON.parse(localStorage.getItem("preset")) || DATA.presets[1],
@@ -173,50 +168,96 @@ const Launcher = {
         const win = window.open("about:blank", "_blank");
         if (!win) return alert("Pop-up blocked!");
 
-        const doc = win.document;
-        doc.open();
-        doc.write(`
+        const title = this.selectedPreset.title;
+        const icon = this.selectedPreset.icon;
+
+        win.document.write(`
             <!DOCTYPE html>
             <html style="margin:0;padding:0;width:100%;height:100%;overflow:hidden;">
             <head>
-                <title>${this.selectedPreset.title}</title>
-                <link rel="icon" href="${this.selectedPreset.icon}">
+                <title>` + title + `</title>
+                <link rel="icon" href="` + icon + `">
                 <style>
-                    body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; background:#000; }
-                    iframe { border:none; width:100%; height:100%; position:absolute; top:0; left:0; }
+                    body, html { margin:0; padding:0; width:100%; height:100%; overflow:hidden; background:#000; font-family: sans-serif; color: white; }
+                    iframe { border:none; width:100%; height:100%; display: block; }
+                    #refreshBtn {
+                        position: fixed; bottom: 20px; right: 20px; width: 44px; height: 44px;
+                        background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(255,255,255,0.1); 
+                        border-radius: 50%; cursor: pointer; z-index: 999; display: flex; 
+                        align-items: center; justify-content: center; color: white; transition: 0.2s;
+                    }
+                    #refreshBtn:hover { transform: scale(1.1); background: #000; border-color: #6366f1; }
+                    .error-container { 
+                        display: flex; flex-direction: column; align-items: center; justify-content: center; 
+                        height: 100vh; text-align: center; background: #05070a; padding: 40px; 
+                    }
+                    h1 { font-size: 2rem; margin-bottom: 20px; color: #f8fafc; }
+                    p { font-size: 1.1rem; color: #94a3b8; max-width: 600px; line-height: 1.6; }
+                    .reason-box { background: #1e293b; padding: 20px; border-radius: 12px; margin: 30px 0; border: 1px solid #334155; color: #6366f1; font-family: monospace; }
                 </style>
             </head>
             <body>
-                <iframe id="ifr" src="${finalUrl}" 
-                    allow="fullscreen; autoplay; cursor-lock; clipboard-read; clipboard-write; microphone; camera; display-capture" 
-                    sandbox="allow-forms allow-modals allow-orientation-lock allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-presentation allow-scripts allow-same-origin">
-                </iframe>
-                <script>
-                    // Leave site protection inside the cloak tab
-                    window.addEventListener('beforeunload', (e) => {
-                        e.preventDefault();
-                        e.returnValue = '';
-                    });
+                <iframe id="ifr" src="` + finalUrl + `" allow="fullscreen; autoplay; clipboard-read; clipboard-write;"></iframe>
+                
+                <button id="refreshBtn" onclick="doRefresh()" title="Refresh Page">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+                </button>
 
-                    window.onkeydown = function(e) {
-                        if (e.key === "Escape") window.location.href = "https://classroom.google.com";
-                    };
+                <script>
+                    const ifr = document.getElementById('ifr');
+                    const btn = document.getElementById('refreshBtn');
+
+                    function checkFullscreen() {
+                        const winRatio = window.innerWidth / window.innerHeight;
+                        const screenRatio = screen.width / screen.height;
+                        if (Math.abs(winRatio - screenRatio) < 0.01) {
+                            btn.style.display = 'none';
+                        } else {
+                            btn.style.display = 'flex';
+                        }
+                    }
+                    window.addEventListener('resize', checkFullscreen);
+                    checkFullscreen();
+
+                    let loadTriggered = false;
+                    ifr.onload = () => { loadTriggered = true; };
+
+                    setTimeout(() => {
+                        try {
+                            if (!loadTriggered && ifr.contentWindow.length === 0) {
+                                throw new Error('Blocked');
+                            }
+                        } catch(e) {
+                            document.body.innerHTML = \`
+                                <div class="error-container">
+                                    <h1>Connection Refused</h1>
+                                    <p>This website has triggered an <b>X-Frame-Options</b> refusal. It is purposely blocking itself from being loaded inside an iframe for security.</p>
+                                    <div class="reason-box">REASON: SITE_POLICY_REFUSED_IFRAME_CONNECTION</div>
+                                    <p><b>Note:</b> You cannot load sites like Google, YouTube, or Discord directly. You must use an unblocked proxy or a site that allows embedding.</p>
+                                    <button onclick="window.close()" style="margin-top:30px; padding:12px 24px; background:#6366f1; border:none; color:white; border-radius:8px; cursor:pointer;">Back to Launcher</button>
+                                </div>\`;
+                        }
+                    }, 4500);
+
+                    function doRefresh() {
+                        try {
+                            ifr.contentWindow.location.reload();
+                        } catch(e) {
+                            ifr.src = ifr.src;
+                        }
+                    }
+
+                    window.onkeydown = (e) => { if(e.key === 'Escape') window.location.href = "https://classroom.google.com"; };
                 <\/script>
             </body>
             </html>
         `);
-        doc.close();
     },
 
     formatUrl(url) {
         url = url.trim();
-        // Regex to check if it's a likely URL (contains a dot, no spaces)
-        const isUrlPattern = /^https?:\/\/.*/i.test(url) || (url.includes('.') && !url.includes(' '));
-        
-        if (isUrlPattern) {
-            return url.startsWith('http') ? url : "https://" + url;
-        }
-        // Fallback to Search if not a valid URL pattern to avoid Connection Reset
+        if (/^https?:\/\/.*/i.test(url)) return url;
+        if (url.includes('.') && !url.includes(' ')) return "https://" + url;
         return "https://www.google.com/search?q=" + encodeURIComponent(url);
     },
 
@@ -237,45 +278,63 @@ const UI = {
         const grid = document.getElementById("mainGrid");
         grid.innerHTML = (DATA.shortcuts[DATA.currentTab] || []).map(item => `
             <div class="card">
-                <img src="${item.icon}" class="card-icon" onclick="Launcher.open('${item.url}')" onerror="this.src='https://via.placeholder.com/80/0f172a/ffffff?text=${item.name[0]}'">
+                <img src="${item.icon}" class="card-icon" onclick="Launcher.open('${item.url}')">
                 <div style="font-weight:600; margin-bottom:15px;">${item.name}</div>
-                <button class="btn" style="width:100%; font-size:12px;" onclick="UI.copyLink('${item.url}', this)">Copy Link</button>
+                <button class="btn copy-trigger" style="width:100%; font-size:12px;" data-url="${item.url}">Copy Link</button>
             </div>`).join('');
+        
+        grid.querySelectorAll('.copy-trigger').forEach(btn => {
+            btn.onclick = (e) => {
+                e.stopPropagation();
+                UI.universalCopy(btn.getAttribute('data-url'), btn);
+            };
+        });
+    },
+
+    universalCopy(text, btn) {
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        textArea.style.position = "fixed";
+        textArea.style.left = "-9999px";
+        document.body.appendChild(textArea);
+        textArea.select();
+        try {
+            document.execCommand('copy');
+            const originalText = btn.innerText;
+            btn.innerText = "COPIED!";
+            btn.style.background = "var(--accent)";
+            setTimeout(() => {
+                btn.innerText = originalText;
+                btn.style.background = "var(--glass)";
+            }, 1500);
+        } catch (err) {}
+        document.body.removeChild(textArea);
     },
 
     filterGrid() {
         const query = document.getElementById("searchBar").value.toLowerCase();
         document.querySelectorAll('.card').forEach(card => {
-            const name = card.querySelector('div').innerText.toLowerCase();
-            card.classList.toggle('hidden', !name.includes(query));
+            card.classList.toggle('hidden', !card.innerText.toLowerCase().includes(query));
         });
     },
 
     renderPresets() {
         document.getElementById("presetGrid").innerHTML = DATA.presets.map(p => `
             <div class="preset-card ${Launcher.selectedPreset.id === p.id ? 'active' : ''}" onclick="Launcher.setPreset('${p.id}')">
-                <img src="${p.icon || 'https://via.placeholder.com/20'}" style="width:20px; border-radius:4px;">
-                <span style="font-size: 0.9rem; font-weight: 500;">${p.name}</span>
+                <img src="${p.icon}" style="width:20px; height:20px; border-radius:4px;">
+                <span>${p.name}</span>
             </div>`).join('');
     },
 
     switchTab(tabId) {
         DATA.currentTab = tabId;
-        document.querySelectorAll('#tabBar .tab').forEach(btn => btn.classList.toggle('active', btn.innerText.toLowerCase() === tabId));
+        document.querySelectorAll('.tab').forEach(btn => btn.classList.toggle('active', btn.innerText.toLowerCase() === tabId));
         this.renderGrid();
     },
 
     toggleModal(id, show) {
         document.getElementById(id).classList.toggle('active', show);
         if (show) this.renderPresets();
-    },
-
-    copyLink(url, btn) {
-        navigator.clipboard.writeText(url).then(() => {
-            const t = btn.innerText;
-            btn.innerText = "COPIED!";
-            setTimeout(() => btn.innerText = t, 1500);
-        });
     }
 };
 
@@ -283,4 +342,3 @@ UI.renderGrid();
 </script>
 </body>
 </html>
-
