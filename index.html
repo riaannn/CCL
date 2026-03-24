@@ -41,15 +41,10 @@
         .logo-box { width: 32px; height: 32px; background: var(--accent); border-radius: 8px; box-shadow: 0 0 20px rgba(99, 102, 241, 0.4); }
 
         .search-container { margin-bottom: 40px; display: flex; justify-content: center; }
-        .search-input, .edit-input, .alt-textarea {
+        .search-input {
             width: 100%; max-width: 500px; padding: 14px 24px; border-radius: 18px;
             background: var(--glass); border: 1px solid var(--border); color: white;
             font-size: 1rem; outline: none; transition: var(--transition);
-        }
-        
-        .alt-textarea { 
-            max-width: 100%; height: 150px; resize: none; font-family: monospace; font-size: 13px; 
-            background: rgba(0,0,0,0.2); color: var(--accent);
         }
 
         .action-area { display: flex; flex-direction: column; align-items: center; gap: 20px; margin-bottom: 60px; }
@@ -81,7 +76,7 @@
         
         .edit-field { margin-bottom: 15px; text-align: left; }
         .edit-label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase; }
-        .edit-input { max-width: 100%; border-radius: 12px; padding: 10px 15px; }
+        .edit-input { width: 100%; border-radius: 12px; padding: 10px 15px; background: var(--glass); border: 1px solid var(--border); color: white; }
     </style>
 </head>
 <body>
@@ -144,17 +139,28 @@
     <div class="modal-content">
         <h2 style="margin-bottom: 10px;">Alternate Links</h2>
         <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">Mirror list for when main links are blocked.</p>
-        <textarea class="alt-textarea" readonly>
+        <textarea style="width:100%; height:150px; background:rgba(0,0,0,0.2); color:var(--accent); border-radius:12px; padding:15px; border:1px solid var(--border); font-family:monospace;" readonly>
 MAIN: truffled.lol
+
 MIRROR 1: computerlab.strangled.net
+
+
 
 MIRROR 2: https://calculatorsolver-truffled.azure-cost-estimator.se/
 
+
+
 MIRROR 3: https://algebra1topics.arionskyclub.com
 
+
+
 MIRROR 4: https://supermath.salavat.ru
+
 -------------------------------------
+
 MAIN: (ANGRY BIRDS EPIC) https://truffled.lol/games/Epic/index.html
+
+
 
 MIRROR 1: https://riaannn.github.io/Epic/
         </textarea>
@@ -165,12 +171,18 @@ MIRROR 1: https://riaannn.github.io/Epic/
 <div class="modal" id="settingsModal">
     <div class="modal-content">
         <h2 style="margin-bottom: 24px; text-align: center;">Tab Disguise</h2>
-        <div class="preset-grid" id="presetGrid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;"></div>
+        <div id="presetGrid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;"></div>
         <button class="btn btn-primary" style="width: 100%; margin-top: 32px;" onclick="UI.toggleModal('settingsModal', false)">SAVE CHANGES</button>
     </div>
 </div>
 
 <script>
+// Prevent accidental tab closing logic
+window.addEventListener('beforeunload', function (e) {
+    e.preventDefault();
+    e.returnValue = '';
+});
+
 const DEFAULT_SHORTCUTS = {
     web: [
         {name: "Truffled", url: "https://computerlab.strangled.net/", icon: "https://i.imgur.com/Avqlk5Q.jpeg"},
@@ -178,7 +190,7 @@ const DEFAULT_SHORTCUTS = {
     ],
     games: [
         {name: "GN Math", url: "https://blahaj.dedyn.io/gn.html", icon: "https://cdn.discordapp.com/avatars/1366573040846241894/b449678987d3a22819a5ba8a8a9cba1b.webp?size=80"},
-        {name: "Angry Birds Epic", url: "https://truffled.lol/games/Epic/index.html", icon: "https://i.imgur.com/ql7Gz9e.jpeg"}
+        {name: "Angry Birds Epic", url: "https://riaannn.github.io/Epic/", icon: "https://i.imgur.com/ql7Gz9e.jpeg"}
     ],
     apps: [
         {name: "GeforceNow", url: "https://universityeducation.camdvr.org/a/hvtrs8%2F-pna%7B.eedopcgnmw%2Ccmm-mcln%2F", icon: "https://i.imgur.com/T65qqQJ.png"}
@@ -215,10 +227,32 @@ const Launcher = {
                 <style>
                     body, html { margin:0; padding:0; width:100%; height:100%; overflow:hidden; background:#000; }
                     iframe { border:none; width:100%; height:100%; display: block; }
+                    #refresh {
+                        position: fixed; bottom: 20px; right: 20px;
+                        width: 44px; height: 44px; border-radius: 50%;
+                        background: #6366f1; color: white; border: none; cursor: pointer;
+                        display: flex; align-items: center; justify-content: center;
+                        box-shadow: 0 4px 12px rgba(0,0,0,0.5); z-index: 1000;
+                        transition: opacity 0.3s, transform 0.2s;
+                    }
+                    #refresh:hover { transform: scale(1.1); }
+                    .hidden { opacity: 0 !important; pointer-events: none !important; }
                 </style>
             </head>
             <body>
-                <iframe src="${finalUrl}" allow="fullscreen; autoplay; clipboard-read; clipboard-write;"></iframe>
+                <button id="refresh" onclick="document.getElementById('content').src = document.getElementById('content').src">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"></path><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+                </button>
+                <iframe id="content" src="${finalUrl}" allow="fullscreen; autoplay; clipboard-read; clipboard-write;"></iframe>
+                <script>
+                    window.onbeforeunload = function() { return "Leave site?"; };
+                    function updateBtn() {
+                        const isFull = window.innerHeight === window.screen.height || document.fullscreenElement;
+                        document.getElementById('refresh').classList.toggle('hidden', !!isFull);
+                    }
+                    window.addEventListener('resize', updateBtn);
+                    document.addEventListener('fullscreenchange', updateBtn);
+                <\/script>
             </body>
             </html>
         `);
@@ -280,21 +314,16 @@ const UI = {
     },
 
     universalCopy(text, btn) {
-        // High-reliability copy method
         const textArea = document.createElement("textarea");
         textArea.value = text;
         document.body.appendChild(textArea);
         textArea.select();
-        
         try {
             document.execCommand('copy');
             const originalText = btn.innerText;
             btn.innerText = "Copied!";
             setTimeout(() => btn.innerText = originalText, 1500);
-        } catch (err) {
-            console.error('Copy failed', err);
-        }
-        
+        } catch (err) {}
         document.body.removeChild(textArea);
     },
 
@@ -309,7 +338,7 @@ const UI = {
         document.getElementById("presetGrid").innerHTML = DATA.presets.map(p => `
             <div class="preset-card ${Launcher.selectedPreset.id === p.id ? 'active' : ''}" 
                  onclick="Launcher.setPreset('${p.id}')" 
-                 style="padding:16px; border-radius:16px; background:var(--glass); display:flex; align-items:center; gap:12px; cursor:pointer; border:2px solid transparent;">
+                 style="padding:16px; border-radius:16px; background:var(--glass); display:flex; align-items:center; gap:12px; cursor:pointer; border:${Launcher.selectedPreset.id === p.id ? '2px solid var(--accent)' : '2px solid transparent'};">
                 <img src="${p.icon}" style="width:20px; height:20px; border-radius:4px;">
                 <span>${p.name}</span>
             </div>`).join('');
