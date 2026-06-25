@@ -1,0 +1,1263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Cloaked Launcher</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    /* ── CSS VARIABLES ─────────────────────────────────────────────── */
+    :root {
+      --bg:       #050508;
+      --surface:  #0a0a12;
+      --panel:    #0d0d1a;
+      --accent:   #00ff9d;
+      --accent2:  #ff2d78;
+      --text:     #e8fff0;
+      --muted:    #6aaa88;
+      --border:   rgba(0,255,157,.12);
+      --glow:     0 0 20px rgba(0,255,157,.3);
+      --card-cols:160px;
+      --font-d:   'Orbitron', monospace;
+      --font-m:   'Share Tech Mono', monospace;
+      --scanline-opacity: 1;
+      --vignette-opacity: 1;
+    }
+
+    /* ── RESET ─────────────────────────────────────────────────────── */
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box }
+    html, body { width:100vw; height:100vh; overflow:hidden; background:var(--bg); color:var(--text); font-family:var(--font-m) }
+
+    /* ── CUSTOM CURSOR ─────────────────────────────────────────────── */
+    #cursor {
+      position:fixed; width:16px; height:16px; pointer-events:none;
+      z-index:999999; transform:translate(-50%,-50%); will-change:transform; display:none;
+    }
+    #cursor::before {
+      content:''; position:absolute; inset:0; border:2px solid var(--accent);
+      clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%);
+      animation:cursorSpin 3s linear infinite;
+    }
+    #cursor::after {
+      content:''; position:absolute; top:50%; left:50%;
+      width:4px; height:4px; margin:-2px; background:var(--accent); border-radius:50%;
+    }
+    @keyframes cursorSpin { to { transform:rotate(360deg) } }
+    body.custom-cursor { cursor:none }
+    body.custom-cursor #cursor { display:block }
+
+    /* ── SCANLINES / VIGNETTE ──────────────────────────────────────── */
+    body::before {
+      content:''; position:fixed; inset:0; pointer-events:none; z-index:99998;
+      background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.05) 2px,rgba(0,0,0,.05) 4px);
+      opacity:var(--scanline-opacity);
+    }
+    body::after {
+      content:''; position:fixed; inset:0; pointer-events:none; z-index:99997;
+      background:radial-gradient(ellipse at center,transparent 50%,rgba(0,0,0,.6) 100%);
+      opacity:var(--vignette-opacity);
+    }
+
+    /* ── BOOT SCREEN ───────────────────────────────────────────────── */
+    #boot {
+      position:fixed; inset:0; z-index:100000; background:var(--bg);
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      gap:6px; transition:opacity .8s .3s, visibility .8s .3s;
+    }
+    #boot.hide { opacity:0; visibility:hidden; pointer-events:none }
+    .boot-logo {
+      font-family:var(--font-d); font-size:2.8rem; font-weight:900; color:var(--accent);
+      text-shadow:0 0 40px var(--accent),0 0 80px rgba(0,255,157,.3);
+      letter-spacing:.4em; margin-bottom:24px; animation:logoFlicker .1s 2.2s steps(1) 3;
+    }
+    @keyframes logoFlicker { 50% { opacity:0 } }
+    .boot-line { font-size:.72rem; color:var(--accent); white-space:nowrap; overflow:hidden; width:0; animation:typeIn .32s forwards }
+    .boot-line:nth-child(2) { animation-delay:0s }
+    .boot-line:nth-child(3) { animation-delay:.3s }
+    .boot-line:nth-child(4) { animation-delay:.58s }
+    .boot-line:nth-child(5) { animation-delay:.82s }
+    .boot-line:nth-child(6) { animation-delay:1s; color:var(--accent2) }
+    @keyframes typeIn { to { width:320px } }
+
+    /* ── PVZ SETUP OVERLAY ─────────────────────────────────────────── */
+    #pvzSetup {
+      position:fixed; inset:0; z-index:200000; background:var(--bg);
+      display:flex; align-items:center; justify-content:center;
+      overflow-y:auto; padding:24px;
+    }
+    #pvzSetup.hide { display:none }
+    .pvz-box {
+      width:100%; max-width:560px; border:1px solid rgba(0,255,157,.25);
+      background:var(--panel);
+      clip-path:polygon(16px 0%,100% 0%,100% calc(100% - 16px),calc(100% - 16px) 100%,0% 100%,0% 16px);
+      animation:pvzIn .3s cubic-bezier(.4,0,.2,1);
+    }
+    @keyframes pvzIn { from { opacity:0; transform:translateY(14px) } to { opacity:1; transform:none } }
+    .pvz-header {
+      padding:22px 28px 16px; border-bottom:1px solid var(--border);
+      display:flex; align-items:center; gap:12px; position:relative;
+    }
+    .pvz-header::after {
+      content:''; position:absolute; bottom:0; left:0; right:0; height:1px;
+      background:linear-gradient(90deg,transparent,var(--accent),transparent); opacity:.4;
+    }
+    .pvz-logo-icon {
+      width:36px; height:36px; background:rgba(0,255,157,.08); border:1px solid rgba(0,255,157,.25);
+      display:flex; align-items:center; justify-content:center;
+      clip-path:polygon(6px 0%,100% 0%,calc(100% - 6px) 100%,0% 100%);
+    }
+    .pvz-logo-icon span { font-size:1.1rem }
+    .pvz-title { font-family:var(--font-d); font-size:.78rem; font-weight:900; letter-spacing:.22em; color:var(--accent); text-transform:uppercase }
+    .pvz-subtitle { font-size:.55rem; letter-spacing:.18em; color:var(--muted); margin-top:2px; text-transform:uppercase }
+    .pvz-body { padding:24px 28px }
+    .pvz-section { margin-bottom:20px; padding-bottom:18px; border-bottom:1px solid var(--border) }
+    .pvz-section:last-of-type { border-bottom:none; margin-bottom:0; padding-bottom:0 }
+    .pvz-section-label {
+      font-size:.5rem; letter-spacing:.3em; color:var(--muted); text-transform:uppercase;
+      margin-bottom:10px; display:flex; align-items:center; gap:8px;
+    }
+    .pvz-section-label::after { content:''; flex:1; height:1px; background:linear-gradient(90deg,var(--border),transparent) }
+    .pvz-placeholder {
+      font-size:.68rem; line-height:1.75; color:var(--text); letter-spacing:.04em;
+      background:rgba(0,255,157,.02); border:1px dashed rgba(0,255,157,.15);
+      padding:14px 16px; clip-path:polygon(5px 0%,100% 0%,calc(100% - 5px) 100%,0% 100%);
+    }
+    .pvz-placeholder em { color:var(--muted); font-style:normal; font-size:.6rem; display:block; margin-top:6px; letter-spacing:.1em }
+    .pvz-step { display:flex; gap:12px; margin-bottom:12px; align-items:flex-start }
+    .pvz-step:last-child { margin-bottom:0 }
+    .pvz-step-num {
+      font-family:var(--font-d); font-size:.6rem; color:var(--accent);
+      background:rgba(0,255,157,.07); border:1px solid rgba(0,255,157,.2);
+      width:24px; height:24px; display:flex; align-items:center; justify-content:center;
+      flex-shrink:0; clip-path:polygon(4px 0%,100% 0%,calc(100% - 4px) 100%,0% 100%);
+    }
+    .pvz-step-text { font-size:.66rem; line-height:1.7; color:var(--text); letter-spacing:.03em; padding-top:3px }
+    .pvz-step-text .ph { color:var(--muted); font-size:.6rem; display:block; margin-top:2px; letter-spacing:.08em }
+    .pvz-download-bar {
+      display:flex; align-items:center; gap:10px; padding:12px 14px;
+      background:rgba(0,255,157,.04); border:1px solid rgba(0,255,157,.2);
+      clip-path:polygon(5px 0%,100% 0%,calc(100% - 5px) 100%,0% 100%);
+    }
+    .pvz-download-icon { font-size:1rem; flex-shrink:0 }
+    .pvz-download-text { flex:1; font-size:.62rem; letter-spacing:.06em; color:var(--muted) }
+    .pvz-download-link {
+      font-family:var(--font-d); font-size:.6rem; letter-spacing:.14em; color:var(--accent);
+      text-decoration:none; padding:6px 14px; border:1px solid rgba(0,255,157,.3);
+      background:rgba(0,255,157,.06); clip-path:polygon(4px 0%,100% 0%,calc(100% - 4px) 100%,0% 100%);
+      transition:all .2s; white-space:nowrap; text-transform:uppercase;
+    }
+    .pvz-download-link:hover { background:var(--accent); color:#000 }
+    .pvz-warning {
+      display:flex; gap:10px; align-items:flex-start; padding:10px 14px;
+      background:rgba(255,45,120,.04); border:1px solid rgba(255,45,120,.18);
+      clip-path:polygon(5px 0%,100% 0%,calc(100% - 5px) 100%,0% 100%); margin-bottom:20px;
+    }
+    .pvz-warning-icon { color:var(--accent2); font-size:.85rem; flex-shrink:0; margin-top:1px }
+    .pvz-warning-text { font-size:.6rem; line-height:1.7; color:rgba(255,200,200,.8); letter-spacing:.04em }
+    .pvz-warning-text .ph { color:rgba(255,45,120,.5); font-size:.56rem; display:block; margin-top:2px }
+    .pvz-footer { padding:18px 28px 24px; border-top:1px solid var(--border) }
+    .pvz-confirm-btn {
+      width:100%; padding:12px; font-family:var(--font-d); font-size:.65rem; font-weight:700;
+      letter-spacing:.25em; text-transform:uppercase; color:#000; background:var(--accent);
+      border:none; cursor:inherit; clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);
+      transition:all .2s; position:relative; overflow:hidden;
+    }
+    .pvz-confirm-btn::before { content:''; position:absolute; inset:0; background:rgba(255,255,255,.15); opacity:0; transition:opacity .2s }
+    .pvz-confirm-btn:hover::before { opacity:1 }
+    .pvz-confirm-btn-sub { font-size:.5rem; letter-spacing:.12em; color:rgba(0,0,0,.55); font-family:var(--font-m); font-weight:400; display:block; margin-top:3px }
+
+    /* ── APP SHELL ─────────────────────────────────────────────────── */
+    #app {
+      display:grid;
+      grid-template-rows:56px 1fr;
+      grid-template-columns:210px 1fr;
+      height:100vh; width:100vw;
+      grid-template-areas:"topbar topbar" "sidebar main";
+    }
+
+    /* ── TOPBAR ────────────────────────────────────────────────────── */
+    #topbar {
+      grid-area:topbar; display:flex; align-items:center; justify-content:space-between;
+      padding:0 24px; border-bottom:1px solid var(--border);
+      background:rgba(10,10,18,.95); backdrop-filter:blur(10px);
+      position:relative; z-index:100;
+    }
+    #topbar::after {
+      content:''; position:absolute; bottom:0; left:0; right:0; height:1px;
+      background:linear-gradient(90deg,transparent,var(--accent) 40%,transparent); opacity:.5;
+    }
+    .logo { display:flex; align-items:center; gap:10px; font-family:var(--font-d); font-size:.85rem; font-weight:900; letter-spacing:.3em; color:var(--accent); text-shadow:var(--glow) }
+    .logo-diamond { width:18px; height:18px; background:var(--accent); clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%); animation:pulseDia 2s ease-in-out infinite }
+    @keyframes pulseDia { 0%,100% { transform:scale(1) } 50% { transform:scale(1.3) } }
+    .topbar-right { display:flex; align-items:center; gap:10px }
+    #clock { font-size:.7rem; color:var(--muted); letter-spacing:.1em; padding:0 14px; border-left:1px solid var(--border); border-right:1px solid var(--border) }
+    .sys-btn {
+      font-size:.6rem; letter-spacing:.15em; padding:5px 14px; border:1px solid var(--border);
+      background:transparent; color:var(--muted); cursor:inherit; text-transform:uppercase;
+      transition:all .2s; clip-path:polygon(6px 0%,100% 0%,calc(100% - 6px) 100%,0% 100%);
+    }
+    .sys-btn:hover { color:var(--accent); border-color:rgba(0,255,157,.5); background:rgba(0,255,157,.05) }
+
+    /* ── SIDEBAR ───────────────────────────────────────────────────── */
+    #sidebar {
+      grid-area:sidebar; background:var(--panel); border-right:1px solid var(--border);
+      display:flex; flex-direction:column; padding:20px 0; position:relative; overflow:hidden;
+    }
+    #sidebar::after {
+      content:''; position:absolute; top:0; right:0; width:1px; height:100%;
+      background:linear-gradient(180deg,transparent,var(--accent) 50%,transparent); opacity:.3;
+    }
+    .s-label {
+      font-size:.52rem; letter-spacing:.3em; color:var(--muted); text-transform:uppercase;
+      padding:0 18px; margin-bottom:10px; display:flex; align-items:center; gap:8px;
+    }
+    .s-label::after { content:''; flex:1; height:1px; background:linear-gradient(90deg,var(--border),transparent) }
+    .nav-tab {
+      display:flex; align-items:center; gap:10px; padding:9px 18px; font-size:.68rem;
+      letter-spacing:.08em; color:var(--muted); cursor:inherit; border:1px solid transparent;
+      text-transform:uppercase; transition:all .2s; margin:0 8px 3px;
+      clip-path:polygon(6px 0%,100% 0%,calc(100% - 6px) 100%,0% 100%);
+    }
+    .nav-tab:hover { color:var(--text); border-color:var(--border); background:rgba(255,255,255,.02) }
+    .nav-tab.active { color:var(--accent); border-color:rgba(0,255,157,.2); background:rgba(0,255,157,.04) }
+    .tab-icon { font-size:.8rem }
+    .tab-count {
+      margin-left:auto; font-size:.52rem; padding:2px 5px; background:rgba(0,255,157,.08);
+      color:var(--accent); border:1px solid rgba(0,255,157,.15);
+      clip-path:polygon(3px 0%,100% 0%,calc(100% - 3px) 100%,0% 100%);
+    }
+    .sidebar-stats { padding:16px 18px 0; display:flex; flex-direction:column; gap:7px }
+    .stat-row { display:flex; justify-content:space-between; font-size:.58rem; color:var(--muted) }
+    .stat-val { color:var(--accent); font-family:var(--font-d); font-size:.6rem }
+    .sidebar-bottom { padding:16px 12px; margin-top:auto; border-top:1px solid var(--border) }
+    .sidebar-search {
+      width:100%; background:rgba(0,255,157,.02); border:1px solid var(--border); color:var(--text);
+      font-family:var(--font-m); font-size:.68rem; padding:8px 10px; outline:none; transition:all .2s;
+      clip-path:polygon(5px 0%,100% 0%,calc(100% - 5px) 100%,0% 100%);
+    }
+    .sidebar-search:focus { border-color:rgba(0,255,157,.4); background:rgba(0,255,157,.04) }
+    .sidebar-search::placeholder { color:var(--muted) }
+    .add-btn {
+      width:100%; margin-top:8px; padding:8px; font-size:.6rem; letter-spacing:.2em;
+      color:var(--accent); border:1px solid rgba(0,255,157,.2); background:rgba(0,255,157,.03);
+      cursor:inherit; text-transform:uppercase; transition:all .2s;
+      clip-path:polygon(5px 0%,100% 0%,calc(100% - 5px) 100%,0% 100%);
+    }
+    .add-btn:hover { background:rgba(0,255,157,.09); border-color:var(--accent) }
+
+    /* ── MAIN / GRID ───────────────────────────────────────────────── */
+    #main {
+      grid-area:main; overflow-y:auto; padding:22px 24px;
+      scrollbar-width:thin; scrollbar-color:rgba(0,255,157,.3) transparent;
+    }
+    #main::-webkit-scrollbar { width:2px }
+    #main::-webkit-scrollbar-thumb { background:rgba(0,255,157,.3) }
+    #statusbar {
+      display:flex; align-items:center; gap:14px; margin-bottom:18px; padding-bottom:12px;
+      border-bottom:1px solid var(--border); font-size:.58rem; color:var(--muted); letter-spacing:.12em;
+    }
+    .status-dot { width:6px; height:6px; border-radius:50%; background:var(--accent); animation:blink 1.5s ease-in-out infinite }
+    @keyframes blink { 0%,100% { opacity:1 } 50% { opacity:.15 } }
+    #statusbar span.hi { color:var(--text) }
+    .sep { color:var(--border) }
+    #mainGrid {
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(var(--card-cols),1fr));
+      gap:12px; contain:layout;
+    }
+    .card {
+      background:var(--panel); border:1px solid var(--border); position:relative;
+      overflow:hidden; cursor:inherit; transition:border-color .22s, box-shadow .22s;
+      clip-path:polygon(10px 0%,100% 0%,100% calc(100% - 10px),calc(100% - 10px) 100%,0% 100%,0% 10px);
+      animation:cardIn .25s both; will-change:transform;
+    }
+    @keyframes cardIn { from { opacity:0; transform:translate3d(0,6px,0) } to { opacity:1; transform:translate3d(0,0,0) } }
+    .card::after {
+      content:''; position:absolute; top:0; left:0; right:0; height:1px;
+      background:linear-gradient(90deg,transparent,var(--accent),transparent); opacity:0; transition:opacity .3s;
+    }
+    /* GPU-accelerated hover — only transform on GPU layer, no layout-triggering props */
+    .card:hover {
+      border-color:rgba(0,255,157,.45);
+      box-shadow:0 6px 24px rgba(0,255,157,.1);
+      transform:translate3d(0,-3px,0);
+    }
+    .card:hover::after { opacity:1 }
+    .card-corner {
+      position:absolute; top:0; right:0; width:10px; height:10px;
+      background:var(--bg); z-index:2; clip-path:polygon(0 0,100% 0,100% 100%); transition:background .2s;
+    }
+    .card:hover .card-corner { background:rgba(0,255,157,.7) }
+    .card-num { position:absolute; top:5px; left:7px; font-family:var(--font-d); font-size:.45rem; color:rgba(0,255,157,.25); z-index:2; letter-spacing:.05em }
+    .card-thumb {
+      width:100%; height:100px; object-fit:cover; display:block;
+      filter:saturate(.65) brightness(.8); transition:filter .3s;
+      /* promote thumb to its own compositor layer */
+      will-change:filter; transform:translateZ(0);
+    }
+    .card:hover .card-thumb { filter:saturate(1) brightness(1) }
+    .card-body { padding:8px 10px }
+    .card-name { font-size:.62rem; letter-spacing:.04em; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:6px }
+    .card-actions { display:flex; gap:5px }
+    .card-launch {
+      flex:1; font-size:.52rem; letter-spacing:.12em; text-transform:uppercase; padding:5px;
+      border:1px solid rgba(0,255,157,.18); background:rgba(0,255,157,.04); color:var(--accent);
+      cursor:inherit; transition:all .2s; clip-path:polygon(3px 0%,100% 0%,calc(100% - 3px) 100%,0% 100%);
+    }
+    .card-launch:hover { background:var(--accent); color:#000 }
+    .card-edit {
+      font-size:.52rem; letter-spacing:.08em; text-transform:uppercase; padding:5px 7px;
+      border:1px solid var(--border); background:transparent; color:var(--muted);
+      cursor:inherit; transition:all .2s; clip-path:polygon(3px 0%,100% 0%,calc(100% - 3px) 100%,0% 100%);
+    }
+    .card-edit:hover { color:var(--text); border-color:rgba(255,255,255,.15) }
+    .card.direct { border-color:rgba(255,45,120,.2) }
+    .card.direct:hover { border-color:var(--accent2); box-shadow:0 6px 24px rgba(255,45,120,.1) }
+    .card.direct .card-launch { border-color:rgba(255,45,120,.25); color:var(--accent2); background:rgba(255,45,120,.04) }
+    .card.direct .card-launch:hover { background:var(--accent2); color:#fff }
+    .card.direct::after { background:linear-gradient(90deg,transparent,var(--accent2),transparent) }
+    .card.direct:hover .card-corner { background:rgba(255,45,120,.7) }
+    .empty { grid-column:1/-1; text-align:center; padding:60px 20px; color:var(--muted); font-size:.68rem; letter-spacing:.12em }
+
+    /* ── MODALS (generic) ──────────────────────────────────────────── */
+    .modal {
+      position:fixed; inset:0; z-index:10000; background:rgba(0,0,0,.85);
+      backdrop-filter:blur(10px); display:none; align-items:center; justify-content:center;
+    }
+    .modal.active { display:flex }
+    .modal-box {
+      background:var(--panel); width:90%; max-width:460px; border:1px solid var(--border);
+      clip-path:polygon(14px 0%,100% 0%,100% calc(100% - 14px),calc(100% - 14px) 100%,0% 100%,0% 14px);
+      animation:modalIn .18s cubic-bezier(.4,0,.2,1); max-height:90vh; overflow-y:auto;
+      scrollbar-width:thin; scrollbar-color:rgba(0,255,157,.2) transparent;
+    }
+    @keyframes modalIn { from { opacity:0; transform:translate3d(0,6px,0) scale(.96) } to { opacity:1; transform:translate3d(0,0,0) scale(1) } }
+    .modal-header {
+      padding:18px 22px 14px; border-bottom:1px solid var(--border);
+      display:flex; align-items:center; gap:10px; position:sticky; top:0;
+      background:var(--panel); z-index:2;
+    }
+    .modal-header h2 { font-family:var(--font-d); font-size:.75rem; letter-spacing:.2em; color:var(--accent); text-transform:uppercase }
+    .modal-body { padding:18px 22px }
+    .f-label { font-size:.52rem; letter-spacing:.2em; color:var(--muted); text-transform:uppercase; margin-bottom:5px }
+    .f-input {
+      width:100%; background:rgba(0,255,157,.02); border:1px solid var(--border);
+      color:var(--text); font-family:var(--font-m); font-size:.72rem; padding:8px 10px;
+      outline:none; margin-bottom:12px;
+      clip-path:polygon(5px 0%,100% 0%,calc(100% - 5px) 100%,0% 100%); transition:all .2s;
+    }
+    .f-input:focus { border-color:rgba(0,255,157,.4) }
+    .modal-actions { display:flex; gap:8px; margin-top:4px }
+    .m-btn {
+      flex:1; padding:9px; font-family:var(--font-m); font-size:.58rem; letter-spacing:.18em;
+      text-transform:uppercase; cursor:inherit; border:1px solid var(--border); background:transparent;
+      color:var(--muted); transition:all .2s; clip-path:polygon(5px 0%,100% 0%,calc(100% - 5px) 100%,0% 100%);
+    }
+    .m-btn:hover { color:var(--text); border-color:rgba(255,255,255,.2) }
+    .m-btn.primary { color:var(--accent); border-color:rgba(0,255,157,.25); background:rgba(0,255,157,.04) }
+    .m-btn.primary:hover { background:var(--accent); color:#000 }
+    .m-btn.danger { color:var(--accent2); border-color:rgba(255,45,120,.2) }
+    .m-btn.danger:hover { background:var(--accent2); color:#fff }
+    #confirmModal .modal-box { max-width:380px; text-align:center }
+    #confirmModal .modal-body { padding:24px 28px 20px }
+    .confirm-icon { font-size:2rem; margin-bottom:12px; display:block }
+    .confirm-msg { font-size:.75rem; letter-spacing:.06em; color:var(--text); margin-bottom:6px; line-height:1.6 }
+    .confirm-url {
+      font-size:.52rem; color:var(--muted); letter-spacing:.05em; word-break:break-all;
+      margin-bottom:20px; padding:6px 8px; border:1px solid var(--border); background:rgba(0,255,157,.02);
+    }
+
+    /* ── SETTINGS ──────────────────────────────────────────────────── */
+    .settings-section { margin-bottom:20px; padding-bottom:16px; border-bottom:1px solid var(--border) }
+    .settings-section:last-child { border-bottom:none; margin-bottom:0; padding-bottom:0 }
+    .settings-section-title {
+      font-size:.52rem; letter-spacing:.25em; color:var(--muted); text-transform:uppercase;
+      margin-bottom:12px; display:flex; align-items:center; gap:8px;
+    }
+    .settings-section-title::after { content:''; flex:1; height:1px; background:linear-gradient(90deg,var(--border),transparent) }
+    .toggle-row {
+      display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;
+      padding:8px 10px; background:rgba(0,255,157,.02); border:1px solid var(--border);
+      clip-path:polygon(5px 0%,100% 0%,calc(100% - 5px) 100%,0% 100%);
+    }
+    .toggle-label { font-size:.62rem; color:var(--text); letter-spacing:.04em }
+    .toggle-sub { font-size:.5rem; color:var(--muted); margin-top:2px }
+    .toggle { position:relative; width:36px; height:20px; flex-shrink:0 }
+    .toggle input { opacity:0; width:0; height:0 }
+    .toggle-slider {
+      position:absolute; inset:0; background:rgba(255,255,255,.08); border:1px solid var(--border);
+      cursor:inherit; transition:all .25s; clip-path:polygon(3px 0%,100% 0%,calc(100% - 3px) 100%,0% 100%);
+    }
+    .toggle-slider::before {
+      content:''; position:absolute; left:2px; top:2px; width:14px; height:14px;
+      background:var(--muted); transition:all .25s;
+      clip-path:polygon(3px 0%,100% 0%,calc(100% - 3px) 100%,0% 100%);
+    }
+    .toggle input:checked+.toggle-slider { background:rgba(0,255,157,.15); border-color:rgba(0,255,157,.4) }
+    .toggle input:checked+.toggle-slider::before { transform:translateX(16px); background:var(--accent) }
+    .preset-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px }
+    .preset-item {
+      padding:10px 12px; background:rgba(0,255,157,.02); border:1px solid var(--border);
+      cursor:inherit; transition:all .2s; display:flex; align-items:center; gap:9px;
+      font-size:.62rem; color:var(--muted); clip-path:polygon(5px 0%,100% 0%,calc(100% - 5px) 100%,0% 100%);
+    }
+    .preset-item:hover { border-color:rgba(0,255,157,.25); color:var(--text) }
+    .preset-item.selected { border-color:var(--accent); color:var(--accent); background:rgba(0,255,157,.05) }
+    .preset-item img { width:13px; height:13px }
+    .range-row { margin-bottom:10px }
+    .range-label-row { display:flex; justify-content:space-between; margin-bottom:4px }
+    .range-name { font-size:.6rem; color:var(--text) }
+    .range-val { font-size:.6rem; color:var(--accent); font-family:var(--font-d) }
+    input[type=range] { width:100%; -webkit-appearance:none; height:2px; background:var(--border); outline:none; cursor:inherit }
+    input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:12px; height:12px; background:var(--accent); clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%); cursor:inherit }
+    input[type=range]::-moz-range-thumb { width:12px; height:12px; background:var(--accent); border:none }
+    .color-row {
+      display:flex; align-items:center; gap:10px; margin-bottom:10px; padding:8px 10px;
+      background:rgba(0,255,157,.02); border:1px solid var(--border);
+      clip-path:polygon(5px 0%,100% 0%,calc(100% - 5px) 100%,0% 100%);
+    }
+    .color-label { font-size:.62rem; color:var(--text); flex:1 }
+    input[type=color] { width:32px; height:22px; border:1px solid var(--border); background:transparent; cursor:inherit; padding:1px; clip-path:polygon(3px 0%,100% 0%,calc(100% - 3px) 100%,0% 100%) }
+    .f-select {
+      width:100%; background:rgba(0,255,157,.02); border:1px solid var(--border); color:var(--text);
+      font-family:var(--font-m); font-size:.68rem; padding:7px 10px; outline:none; cursor:inherit;
+      clip-path:polygon(5px 0%,100% 0%,calc(100% - 5px) 100%,0% 100%);
+      -webkit-appearance:none; transition:border-color .2s; margin-bottom:12px;
+    }
+    .f-select:focus { border-color:rgba(0,255,157,.4) }
+    .f-select option { background:#0d0d1a }
+
+    /* ─────────────────────────────────────────────────────────────────
+       PIP WINDOW — Picture-in-Picture modal game container
+       ──────────────────────────────────────────────────────────────── */
+    #pipOverlay {
+      position:fixed; inset:0; z-index:50000;
+      background:rgba(0,0,0,.72); backdrop-filter:blur(6px);
+      display:flex; align-items:center; justify-content:center;
+      /* GPU-accelerated fade — opacity + transform only, no layout changes */
+      opacity:0; pointer-events:none;
+      transition:opacity .25s cubic-bezier(.4,0,.2,1);
+      will-change:opacity;
+    }
+    #pipOverlay.active { opacity:1; pointer-events:all }
+
+    #pipWindow {
+      position:relative;
+      width:min(88vw, 1100px);
+      height:min(82vh, 720px);
+      background:var(--panel);
+      border:1px solid rgba(0,255,157,.35);
+      display:flex; flex-direction:column;
+      clip-path:polygon(14px 0%,100% 0%,100% calc(100% - 14px),calc(100% - 14px) 100%,0% 100%,0% 14px);
+      /* GPU-accelerated entrance: only transform + opacity */
+      transform:translate3d(0,28px,0) scale(.97);
+      opacity:0;
+      transition:transform .28s cubic-bezier(.4,0,.2,1), opacity .28s cubic-bezier(.4,0,.2,1);
+      will-change:transform, opacity;
+      box-shadow:0 24px 80px rgba(0,0,0,.7), 0 0 0 1px rgba(0,255,157,.08);
+    }
+    #pipOverlay.active #pipWindow {
+      transform:translate3d(0,0,0) scale(1);
+      opacity:1;
+    }
+
+    /* header bar */
+    #pipHeader {
+      display:flex; align-items:center; gap:10px; padding:0 14px;
+      height:42px; flex-shrink:0;
+      background:rgba(5,5,8,.95); border-bottom:1px solid var(--border);
+      position:relative;
+    }
+    #pipHeader::after {
+      content:''; position:absolute; bottom:0; left:0; right:0; height:1px;
+      background:linear-gradient(90deg,transparent,var(--accent) 40%,transparent); opacity:.4;
+    }
+    .pip-diamond {
+      width:10px; height:10px; background:var(--accent); flex-shrink:0;
+      clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%);
+    }
+    #pipTitle {
+      flex:1; font-family:var(--font-d); font-size:.6rem; letter-spacing:.2em;
+      color:var(--accent); text-transform:uppercase; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+    .pip-ctrl-btn {
+      width:28px; height:28px; border:1px solid var(--border); background:transparent;
+      color:var(--muted); cursor:inherit; display:flex; align-items:center; justify-content:center;
+      font-size:.8rem; transition:all .18s; flex-shrink:0;
+      clip-path:polygon(4px 0%,100% 0%,calc(100% - 4px) 100%,0% 100%);
+    }
+    .pip-ctrl-btn:hover { color:var(--accent); border-color:rgba(0,255,157,.5); background:rgba(0,255,157,.07) }
+    .pip-ctrl-btn.close-btn:hover { color:#fff; border-color:var(--accent2); background:var(--accent2) }
+
+    /* iframe host */
+    #pipFrameWrap {
+      flex:1; position:relative; overflow:hidden;
+      /* create new stacking context on GPU layer */
+      transform:translateZ(0); will-change:transform;
+    }
+    #pipFrame {
+      position:absolute; inset:0; width:100%; height:100%; border:none;
+      background:#000;
+    }
+
+    /* loading indicator shown while iframe loads */
+    #pipLoader {
+      position:absolute; inset:0; display:flex; flex-direction:column;
+      align-items:center; justify-content:center; gap:14px;
+      background:var(--panel); z-index:2; transition:opacity .3s;
+      pointer-events:none;
+    }
+    #pipLoader.hidden { opacity:0 }
+    .pip-loader-ring {
+      width:48px; height:48px; border:2px solid var(--border);
+      border-top-color:var(--accent); border-radius:50%;
+      animation:pipSpin 1s linear infinite;
+      /* GPU-accelerated spin */
+      will-change:transform; transform:translateZ(0);
+    }
+    @keyframes pipSpin { to { transform:rotate(360deg) } }
+    .pip-loader-text { font-family:var(--font-d); font-size:.55rem; letter-spacing:.25em; color:var(--muted) }
+  </style>
+</head>
+
+<body>
+  <div id="cursor"></div>
+
+  <!-- ── BOOT SCREEN ─────────────────────────────────────────────── -->
+  <div id="boot">
+    <div class="boot-logo">CLOAKED</div>
+    <div class="boot-line">> SYSTEM BOOT v3.1.0...</div>
+    <div class="boot-line">> INITIALIZING GAME VAULT...</div>
+    <div class="boot-line">> LOADING SHORTCUT MANIFESTS...</div>
+    <div class="boot-line">> CLOAK PROTOCOL ENGAGED</div>
+    <div class="boot-line">> [OK] ALL SYSTEMS NOMINAL</div>
+  </div>
+
+  <!-- ── PVZ SETUP OVERLAY ───────────────────────────────────────── -->
+  <div id="pvzSetup" class="hide">
+    <div class="pvz-box">
+      <div class="pvz-header">
+        <div class="pvz-logo-icon"><span>🌻</span></div>
+        <div class="pvz-title-wrap">
+          <div class="pvz-title">PVZ GOTY — Setup Required</div>
+          <div class="pvz-subtitle">One-time installation ◈ Required files</div>
+        </div>
+      </div>
+      <div class="pvz-body">
+        <div class="pvz-section">
+          <div class="pvz-section-label">Overview</div>
+          <div class="pvz-placeholder">
+            Before playing, download the necessary game assets below.
+            <em>► PLEASE DOWNLOAD THE FILES BELOW FIRST</em>
+          </div>
+        </div>
+        <div class="pvz-section">
+          <div class="pvz-section-label">Required Files</div>
+          <div class="pvz-download-bar">
+            <div class="pvz-download-icon">⬡</div>
+            <div class="pvz-download-text">GAME ASSETS</div>
+            <a href="https://github.com/popcap-games/PvZ/raw/refs/heads/main/game/Plants%20Vs%20Zombies%20Game%20of%20the%20Year%20Edition.zip"
+               class="pvz-download-link" target="_blank" rel="noopener">⬇ DOWNLOAD</a>
+          </div>
+        </div>
+        <div class="pvz-section">
+          <div class="pvz-section-label">Installation Steps</div>
+          <div class="pvz-step"><div class="pvz-step-num">01</div><div class="pvz-step-text">DOWNLOAD FILES<span class="ph">► Download the .zip above</span></div></div>
+          <div class="pvz-step"><div class="pvz-step-num">02</div><div class="pvz-step-text">OPEN WEBSITE<span class="ph">► Click "Import Resource ZIP" on the game page</span></div></div>
+          <div class="pvz-step"><div class="pvz-step-num">03</div><div class="pvz-step-text">INSERT FILES<span class="ph">► Select the downloaded .zip</span></div></div>
+          <div class="pvz-step"><div class="pvz-step-num">04</div><div class="pvz-step-text">PLAY<span class="ph">► Click the play button</span></div></div>
+        </div>
+        <div class="pvz-warning">
+          <div class="pvz-warning-icon">⚠</div>
+          <div class="pvz-warning-text">CONFIRMING BELOW WILL NOT ALLOW YOU TO REVISIT THIS SETUP SCREEN<span class="ph">► WARNING</span></div>
+        </div>
+      </div>
+      <div class="pvz-footer">
+        <button class="pvz-confirm-btn" onclick="PVZ.confirmSetup()">
+          ◈ &nbsp; I HAVE DOWNLOADED THE FILES
+          <span class="pvz-confirm-btn-sub">This screen will not appear again</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────────────────────────────────────────────────
+       PIP WINDOW — replaces the popup tab approach
+       ──────────────────────────────────────────────────────────── -->
+  <div id="pipOverlay" role="dialog" aria-modal="true" aria-label="Game Window">
+    <div id="pipWindow">
+      <div id="pipHeader">
+        <div class="pip-diamond"></div>
+        <div id="pipTitle">LOADING...</div>
+        <!-- Fullscreen toggle -->
+        <button class="pip-ctrl-btn" id="pipFsBtn" title="Fullscreen" onclick="PIP.toggleFullscreen()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
+          </svg>
+        </button>
+        <!-- Close -->
+        <button class="pip-ctrl-btn close-btn" title="Close" onclick="PIP.close()">✕</button>
+      </div>
+      <div id="pipFrameWrap">
+        <div id="pipLoader">
+          <div class="pip-loader-ring"></div>
+          <div class="pip-loader-text">ESTABLISHING CONNECTION...</div>
+        </div>
+        <!--
+          sandbox: allow-scripts allow-same-origin allow-forms allow-popups allow-pointer-lock
+          allow-fullscreen — enables in-frame fullscreen requests
+          Restricts: top-level navigation, modals, storage access from cross-origin frames
+        -->
+        <iframe
+          id="pipFrame"
+          sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-pointer-lock allow-fullscreen"
+          allow="fullscreen; autoplay; clipboard-write; encrypted-media; gyroscope"
+          allowfullscreen
+        ></iframe>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── APP SHELL ───────────────────────────────────────────────── -->
+  <div id="app">
+    <header id="topbar">
+      <div class="logo">
+        <div class="logo-diamond"></div>
+        <span id="logo-text">CLK//SYS</span>
+      </div>
+      <div class="topbar-right">
+        <div id="clock">00:00:00</div>
+        <button class="sys-btn" onclick="UI.toggleModal('settingsModal',true)">⬡ SETTINGS</button>
+      </div>
+    </header>
+
+    <nav id="sidebar">
+      <div class="s-label">Navigation</div>
+      <div class="nav-tab" id="tab-web" onclick="UI.switchTab('web')"><span class="tab-icon">◈</span>Web<span class="tab-count" id="cnt-web">0</span></div>
+      <div class="nav-tab active" id="tab-games" onclick="UI.switchTab('games')"><span class="tab-icon">◉</span>Games<span class="tab-count" id="cnt-games">0</span></div>
+      <div class="nav-tab" id="tab-apps" onclick="UI.switchTab('apps')"><span class="tab-icon">◇</span>Apps<span class="tab-count" id="cnt-apps">0</span></div>
+      <div class="sidebar-stats">
+        <div class="s-label" style="margin-top:12px">Vault Status</div>
+        <div class="stat-row"><span>TOTAL</span><span class="stat-val" id="stat-total">—</span></div>
+        <div class="stat-row"><span>TAB</span><span class="stat-val" id="stat-tab">GAMES</span></div>
+        <div class="stat-row"><span>CLOAK</span><span class="stat-val" id="stat-cloak">CANVAS</span></div>
+      </div>
+      <div class="sidebar-bottom">
+        <div class="s-label">Search</div>
+        <input type="text" class="sidebar-search" id="searchBar" placeholder="QUERY / URL..." oninput="UI.renderGrid()">
+        <button class="add-btn" onclick="UI.openAddModal()">+ ADD SHORTCUT</button>
+      </div>
+    </nav>
+
+    <main id="main">
+      <div id="statusbar">
+        <div class="status-dot"></div>
+        <span class="hi">VAULT ONLINE</span>
+        <span class="sep">|</span>
+        ENTRIES: <span class="hi" id="status-count">0</span>
+        <span class="sep">|</span>
+        TAB: <span class="hi" id="status-tab">GAMES</span>
+      </div>
+      <div id="mainGrid"></div>
+    </main>
+  </div>
+
+  <!-- ── LAUNCH CONFIRM MODAL ────────────────────────────────────── -->
+  <div class="modal" id="confirmModal">
+    <div class="modal-box">
+      <div class="modal-header"><span style="color:var(--accent)">◈</span>
+        <h2>YOU MAY TURN THIS NOTIFICATION OFF IN SETTINGS</h2>
+      </div>
+      <div class="modal-body">
+        <span class="confirm-icon">⬡</span>
+        <div class="confirm-msg">IF SECURLY BLOCKS THE LINK, SPAM THE REFRESH BUTTON IN THE BOTTOM RIGHT CORNER TO UNBLOCK IT</div>
+        <div class="confirm-url" id="confirm-url-display"></div>
+        <div class="modal-actions">
+          <button class="m-btn primary" id="confirmLaunchBtn">CONFIRM LAUNCH</button>
+          <button class="m-btn" onclick="UI.toggleModal('confirmModal',false)">ABORT</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── EDIT MODAL ──────────────────────────────────────────────── -->
+  <div class="modal" id="editModal">
+    <div class="modal-box">
+      <div class="modal-header"><span style="color:var(--accent)">◈</span>
+        <h2 id="modalTitle">Edit Entry</h2>
+      </div>
+      <div class="modal-body">
+        <div class="f-label">Display Name</div>
+        <input type="text" id="editName" class="f-input" placeholder="IDENTIFIER">
+        <div class="f-label">Target URL</div>
+        <input type="text" id="editUrl" class="f-input" placeholder="https://...">
+        <div class="f-label">Icon URL</div>
+        <input type="text" id="editIcon" class="f-input" placeholder="https://... or leave blank for auto">
+        <div class="f-label">Category</div>
+        <select id="editCategory" class="f-select">
+          <option value="web">Web</option>
+          <option value="games">Games</option>
+          <option value="apps">Apps</option>
+        </select>
+        <div class="modal-actions">
+          <button class="m-btn primary" onclick="UI.saveShortcut()">COMMIT</button>
+          <button id="deleteBtn" class="m-btn danger" onclick="UI.deleteShortcut()">PURGE</button>
+          <button class="m-btn" onclick="UI.toggleModal('editModal',false)">ABORT</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SETTINGS MODAL ──────────────────────────────────────────── -->
+  <div class="modal" id="settingsModal">
+    <div class="modal-box">
+      <div class="modal-header"><span style="color:var(--accent)">⬡</span>
+        <h2>System Settings</h2>
+      </div>
+      <div class="modal-body">
+        <div class="settings-section">
+          <div class="settings-section-title">Cloak Profile</div>
+          <div class="f-label" style="margin-bottom:8px">Tab Disguise</div>
+          <div class="preset-grid" id="presetGrid"></div>
+          <div class="f-label" style="margin-top:12px;margin-bottom:5px">Custom Tab Title</div>
+          <input type="text" id="customTitle" class="f-input" placeholder="Leave blank to use preset name" style="margin-bottom:0">
+        </div>
+        <div class="settings-section">
+          <div class="settings-section-title">Display</div>
+          <div class="toggle-row"><div><div class="toggle-label">Boot Intro</div><div class="toggle-sub">Show CLOAKED boot sequence on load</div></div><label class="toggle"><input type="checkbox" id="tog-boot" checked onchange="CFG.set('showBoot',this.checked)"><span class="toggle-slider"></span></label></div>
+          <div class="toggle-row"><div><div class="toggle-label">Securly Notification</div><div class="toggle-sub">Show instructions before launching a shortcut</div></div><label class="toggle"><input type="checkbox" id="tog-notify" checked onchange="CFG.set('launchNotify',this.checked)"><span class="toggle-slider"></span></label></div>
+          <div class="toggle-row"><div><div class="toggle-label">Scanlines</div><div class="toggle-sub">CRT scanline overlay effect</div></div><label class="toggle"><input type="checkbox" id="tog-scan" checked onchange="CFG.set('scanlines',this.checked);CFG.applyFx()"><span class="toggle-slider"></span></label></div>
+          <div class="toggle-row"><div><div class="toggle-label">Vignette</div><div class="toggle-sub">Dark edge vignette effect</div></div><label class="toggle"><input type="checkbox" id="tog-vig" checked onchange="CFG.set('vignette',this.checked);CFG.applyFx()"><span class="toggle-slider"></span></label></div>
+          <div class="toggle-row"><div><div class="toggle-label">Custom Cursor</div><div class="toggle-sub">Diamond cursor vs system default</div></div><label class="toggle"><input type="checkbox" id="tog-cur" checked onchange="CFG.set('customCursor',this.checked);CFG.applyCursor()"><span class="toggle-slider"></span></label></div>
+          <div class="toggle-row"><div><div class="toggle-label">Card Animations</div><div class="toggle-sub">Stagger-in animation on grid render</div></div><label class="toggle"><input type="checkbox" id="tog-anim" checked onchange="CFG.set('cardAnim',this.checked)"><span class="toggle-slider"></span></label></div>
+        </div>
+        <div class="settings-section">
+          <div class="settings-section-title">Appearance</div>
+          <div class="color-row"><span class="color-label">Accent Color</span><input type="color" id="clr-accent" value="#00ff9d" oninput="CFG.setColor('accent',this.value)"></div>
+          <div class="color-row"><span class="color-label">Hot Color</span><input type="color" id="clr-accent2" value="#ff2d78" oninput="CFG.setColor('accent2',this.value)"></div>
+          <div class="color-row"><span class="color-label">Background</span><input type="color" id="clr-bg" value="#050508" oninput="CFG.setColor('bg',this.value)"></div>
+          <div class="range-row">
+            <div class="range-label-row"><span class="range-name">Card Size</span><span class="range-val" id="lbl-cardsize">160px</span></div>
+            <input type="range" id="rng-cardsize" min="120" max="260" value="160" oninput="CFG.setCardSize(this.value)">
+          </div>
+          <div class="f-label" style="margin-bottom:5px">Logo Text</div>
+          <input type="text" id="logo-input" class="f-input" placeholder="CLK//SYS" style="margin-bottom:0" oninput="CFG.setLogo(this.value)">
+        </div>
+        <div class="settings-section">
+          <div class="settings-section-title">System</div>
+          <div class="toggle-row"><div><div class="toggle-label">Exit Warning</div><div class="toggle-sub">Prompt before closing / navigating away</div></div><label class="toggle"><input type="checkbox" id="tog-exit" checked onchange="CFG.set('exitWarn',this.checked)"><span class="toggle-slider"></span></label></div>
+          <div class="modal-actions" style="margin-top:12px">
+            <button class="m-btn danger" onclick="UI.forceReset()">WIPE ALL DATA</button>
+            <button class="m-btn primary" onclick="UI.toggleModal('settingsModal',false)">CONFIRM</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* ══════════════════════════════════════════════════════════════
+       CURSOR
+    ══════════════════════════════════════════════════════════════ */
+    const cursor = document.getElementById('cursor');
+    let mx = 0, my = 0, rafId = null;
+    document.addEventListener('mousemove', e => {
+      mx = e.clientX; my = e.clientY;
+      if (!rafId) rafId = requestAnimationFrame(() => {
+        cursor.style.left = mx + 'px';
+        cursor.style.top  = my + 'px';
+        rafId = null;
+      });
+    });
+
+    /* ══════════════════════════════════════════════════════════════
+       CLOCK
+    ══════════════════════════════════════════════════════════════ */
+    function tick() {
+      const n = new Date();
+      document.getElementById('clock').textContent =
+        [n.getHours(), n.getMinutes(), n.getSeconds()]
+        .map(v => String(v).padStart(2,'0')).join(':');
+    }
+    tick(); setInterval(tick, 1000);
+
+    /* ══════════════════════════════════════════════════════════════
+       HELPERS
+    ══════════════════════════════════════════════════════════════ */
+    function hexToRgba(hex, alpha) {
+      const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+      return `rgba(${r},${g},${b},${alpha})`;
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       CONFIG
+    ══════════════════════════════════════════════════════════════ */
+    const CFG = {
+      DEFAULTS: {
+        showBoot:true, scanlines:true, vignette:true, customCursor:true,
+        launchNotify:true, cardAnim:true, exitWarn:true,
+        accent:'#00ff9d', accent2:'#ff2d78', bg:'#050508',
+        cardSize:160, logoText:'CLK//SYS', customTabTitle:''
+      },
+      data: {},
+      load() {
+        try { this.data = { ...this.DEFAULTS, ...JSON.parse(localStorage.getItem('clk_cfg')||'{}') }; }
+        catch { this.data = { ...this.DEFAULTS }; }
+        this.apply();
+      },
+      save() { localStorage.setItem('clk_cfg', JSON.stringify(this.data)); },
+      set(k,v) { this.data[k]=v; this.save(); },
+      get(k) { return this.data[k] ?? this.DEFAULTS[k]; },
+      apply() {
+        this.applyFx(); this.applyCursor(); this.applyColors();
+        this.applyCardSize(this.get('cardSize'));
+        document.getElementById('logo-text').textContent = this.get('logoText') || 'CLK//SYS';
+      },
+      applyFx() {
+        document.documentElement.style.setProperty('--scanline-opacity', this.get('scanlines') ? '1' : '0');
+        document.documentElement.style.setProperty('--vignette-opacity', this.get('vignette') ? '1' : '0');
+      },
+      applyCursor() { document.body.classList.toggle('custom-cursor', this.get('customCursor')); },
+      applyColors() {
+        const a=this.get('accent'), a2=this.get('accent2'), bg=this.get('bg');
+        document.documentElement.style.setProperty('--accent', a);
+        document.documentElement.style.setProperty('--accent2', a2);
+        document.documentElement.style.setProperty('--bg', bg);
+        document.documentElement.style.setProperty('--border', hexToRgba(a,.12));
+        document.documentElement.style.setProperty('--glow', `0 0 20px ${hexToRgba(a,.3)}`);
+      },
+      setColor(k,v) { this.set(k,v); this.applyColors(); },
+      setCardSize(v) { this.set('cardSize',+v); this.applyCardSize(v); },
+      applyCardSize(v) {
+        document.documentElement.style.setProperty('--card-cols', v+'px');
+        document.getElementById('lbl-cardsize').textContent = v+'px';
+        const r = document.getElementById('rng-cardsize'); if(r) r.value = v;
+      },
+      setLogo(v) { this.set('logoText',v); document.getElementById('logo-text').textContent = v||'CLK//SYS'; },
+      populateUI() {
+        const map = { boot:'showBoot', notify:'launchNotify', scan:'scanlines', vig:'vignette', cur:'customCursor', anim:'cardAnim', exit:'exitWarn' };
+        Object.entries(map).forEach(([k,v]) => document.getElementById('tog-'+k).checked = this.get(v));
+        document.getElementById('clr-accent').value = this.get('accent');
+        document.getElementById('clr-accent2').value = this.get('accent2');
+        document.getElementById('clr-bg').value = this.get('bg');
+        document.getElementById('rng-cardsize').value = this.get('cardSize');
+        document.getElementById('lbl-cardsize').textContent = this.get('cardSize')+'px';
+        document.getElementById('logo-input').value = this.get('logoText');
+        document.getElementById('customTitle').value = this.get('customTabTitle')||'';
+        document.getElementById('customTitle').oninput = e => CFG.set('customTabTitle', e.target.value);
+      }
+    };
+
+    /* ══════════════════════════════════════════════════════════════
+       PIP — Picture-in-Picture window controller
+       Single reusable controller that handles open/close/update/fullscreen.
+    ══════════════════════════════════════════════════════════════ */
+    const PIP = (() => {
+      const overlay  = document.getElementById('pipOverlay');
+      const frame    = document.getElementById('pipFrame');
+      const title    = document.getElementById('pipTitle');
+      const loader   = document.getElementById('pipLoader');
+      const fsBtn    = document.getElementById('pipFsBtn');
+
+      // Track fullscreen state to update button icon
+      document.addEventListener('fullscreenchange', () => {
+        const inFS = !!document.fullscreenElement;
+        fsBtn.innerHTML = inFS
+          ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/></svg>`
+          : `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>`;
+      });
+
+      // Hide loader once iframe fires load event
+      frame.addEventListener('load', () => {
+        // A blank src triggers load too — only hide if actually loaded
+        if (frame.src && frame.src !== 'about:blank') {
+          loader.classList.add('hidden');
+        }
+      });
+
+      return {
+        /**
+         * open(url, label)
+         * The single unified entry point for all shortcut launches.
+         * Clears any previous content, sets new src, shows overlay.
+         */
+        open(url, label) {
+          // Reset loader visibility
+          loader.classList.remove('hidden');
+          // Clear previous frame content immediately to free resources
+          frame.src = 'about:blank';
+          // Update header title
+          title.textContent = (label || url).toUpperCase();
+          // Show overlay (CSS transition handles GPU-accelerated fade+slide)
+          overlay.classList.add('active');
+          // Set new src on next tick so browser paints overlay first
+          requestAnimationFrame(() => { frame.src = url; });
+          // Trap focus inside dialog for accessibility
+          overlay.focus();
+        },
+
+        /**
+         * close()
+         * Explicitly nulls iframe src → terminates all sub-processes,
+         * halts audio/video, releases memory held by the embedded page.
+         */
+        close() {
+          overlay.classList.remove('active');
+          // Wait for CSS transition to finish before killing src,
+          // so the fade-out completes cleanly before the frame blanks.
+          setTimeout(() => {
+            frame.src = 'about:blank'; // ← memory lifecycle: clear immediately
+            loader.classList.remove('hidden');
+            title.textContent = 'LOADING...';
+            // Exit fullscreen if active
+            if (document.fullscreenElement) document.exitFullscreen().catch(()=>{});
+          }, 300); // matches CSS transition duration
+        },
+
+        /** toggleFullscreen() — uses the Fullscreen API on the pip window */
+        toggleFullscreen() {
+          const win = document.getElementById('pipWindow');
+          if (!document.fullscreenElement) {
+            win.requestFullscreen().catch(err => console.warn('FS error:', err));
+          } else {
+            document.exitFullscreen();
+          }
+        }
+      };
+    })();
+
+    /* ══════════════════════════════════════════════════════════════
+       LAUNCHER — confirmation flow that calls PIP.open()
+    ══════════════════════════════════════════════════════════════ */
+    const Launcher = {
+      selectedPreset: null,
+      pendingUrl:     null,
+      pendingLabel:   null,
+
+      init() {
+        try { this.selectedPreset = JSON.parse(localStorage.getItem('preset')); } catch {}
+        if (!this.selectedPreset) this.selectedPreset = DATA.presets[1];
+      },
+
+      /**
+       * prompt(url, label)
+       * Shows the Securly-warning confirm dialog (if enabled),
+       * then delegates to this.open().
+       */
+      prompt(url, label) {
+        if (!url.startsWith('http')) url = 'https://' + url;
+        if (!CFG.get('launchNotify')) { this.open(url, label); return; }
+        this.pendingUrl   = url;
+        this.pendingLabel = label;
+        document.getElementById('confirm-url-display').textContent = url;
+        document.getElementById('confirmLaunchBtn').onclick = () => {
+          UI.toggleModal('confirmModal', false);
+          this.open(this.pendingUrl, this.pendingLabel);
+        };
+        UI.toggleModal('confirmModal', true);
+      },
+
+      /** open(url, label) — hands off to the PIP controller */
+      open(url, label) { PIP.open(url, label); },
+
+      setPreset(id) {
+        this.selectedPreset = DATA.presets.find(p => p.id === id) || DATA.presets[1];
+        localStorage.setItem('preset', JSON.stringify(this.selectedPreset));
+        document.getElementById('stat-cloak').textContent = this.selectedPreset.name.toUpperCase();
+        UI.renderPresets();
+      }
+    };
+
+    /* ══════════════════════════════════════════════════════════════
+       PVZ SETUP
+    ══════════════════════════════════════════════════════════════ */
+    const PVZ_STORAGE_KEY = 'clk_pvz_setup_done';
+    const PVZ_URL = 'https://wszqkzqk.github.io/pvz-portable-wasm/pvz-portable.html';
+    const PVZ = {
+      tryLaunch(label) {
+        const done = localStorage.getItem(PVZ_STORAGE_KEY) === '1';
+        if (done) { Launcher.prompt(PVZ_URL, label || 'PVZ GOTY Edition'); }
+        else { document.getElementById('pvzSetup').classList.remove('hide'); }
+      },
+      confirmSetup() {
+        localStorage.setItem(PVZ_STORAGE_KEY, '1');
+        document.getElementById('pvzSetup').classList.add('hide');
+        Launcher.prompt(PVZ_URL, 'PVZ GOTY Edition');
+      }
+    };
+
+    /* ══════════════════════════════════════════════════════════════
+       DATA
+    ══════════════════════════════════════════════════════════════ */
+    const DEFAULT_SHORTCUTS = {
+      web: [
+        { name:"Truffled",      url:"https://supermath.salavat.ru",                                                        icon:"https://truffled.lol/png/logo.png",                                                                                                                                                                          isDefault:true },
+        { name:"AnuraOS",       url:"https://anura.pro",                                                                   icon:"https://i.imgur.com/6vvxLxR.jpeg",                                                                                                                                                                           isDefault:true },
+        { name:"gn-math",       url:"https://gn-math.dev",                                                                 icon:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAMAAAD04JH5AAAAkFBMVEX7JlL5JlH////+//3/J1T4QGL/4+v9JFH8/////f7+PmP7//36KE/6Jlj/rsD///r4eJH/+Pz6K1X/+ff8OF7/Mlv5e5P75uv/J1r/pbr59fT/7PL2Jlf9KFb3Ik7/RGf2cIv6gJf/8fT5Hkj34/D9Pmn/scT35+r0//r0NWDwKFb9d5L/M1//9v7/ucn98fPUPlMHAAAE8klEQVR4nO1Ya5PaOgz1I8QxYVtiAmk3a6BA98HSy///d1dSngtJDBRm+sFnGHYTK8rBluQjM+bh4eHh4eHh4eHh4eHh4eHh4eHhcQITBJwzZSZqMgA14UpxHijusjOKgV1griZgfzw9Pb08dQBv/rAGCahL7K4kwBURSH9+G8TPlAWMKea2IwKKX0mAp88yHoB8Tg1Tipmx045fTYCh8ThPtNA9EDrJV4YTAZfdGH2yKwmA51WWiIh8nDnVOhJJtoIIgEUYOe1goq4kgLFlV5mOokiI6Ax0T2erJcdwddtZitbLCZiSQJiIuO+XxSIJx0RgOXbZlQTcWVDn/3ar1HaS7hL4aTpq+0zgI5JYaCF0OOYYhHwc4pWIYYAMGkT4/J9dOkF/2wlbQtIEFxA4vLzAZ/87m82+4+f7CY5SnxPQ8nhqVzw9y3/vyeHBovchAq38f4X8fZ0uPqfTxWJ6gl8bCW8UMqsIZBIutdz8OrXEZz8XU3IG9WDOWaCGlqDK/zeJmG3SeaCstSz4AnbIRRcBkR9OLa2BIJmnmxk5fEMCgzFQ5X8G4UtTDLWW8qcGxBE3adZNIEsNPG4aa6gR4MDQEkFCwDgR6J+EKv9DIiyBABi3Y5ejh9IhvLAmQISQMA63s41utPxhBPAhAmX6SYwpfAAWxXBIogqs+kURWDQENN0oZow11jhjioO9xKgtCfABAlX+Z7EU8v09TPkSogIDowDNAIdfBNl1RiDSIZRmmoHKHiIO60Qavr+DwzhbuQjQHATBKMQ1BcYjePxr/fo6Xqfhhfbn456AJ+AJ/GsEFO5WUOt3mqTMLgVloFij+rcTlAl8nkPd0a294H4EWEEgnEncyLOPPWzk8KlVPl6/7D82SEA/gABVT2Xma9IAi89vxT5+gtf/joII3H8JUI2AR0vg5vCmY9wV2hofET/L6IEEaC3gsSVPwwQ3HRKchJhkLrhCAo8IQlJMKApBBQTKjMIERa2oVSlugZp2avEgAgHEIBIIrDHWIgEUHrqS+VWrA9s73IwfUAeIAAe1b2Ey7CiHWY/hTbXOx/WASyQgHkKgRFUP8gSXPGo3Bt19wd0JlPUgP0qQ9TN3X3BvAnU9gIJw1hV09AUPIFDUA4YlIQisqy94DAH4u8RvUnfDfcH9CVT1oLxoBrr7gvsTqOoBNjqGM1dfcHcCVT3AjoRBb+DqC+5GwHU+qCYM9ADoBTr80DvsnLDzyekcIclT7KRarVdTT7rHewn0nfuRONjvPzLs+uUsLE/JUjxHgDtZ8YKm+azqSd/4GS44HyR58ElyYbGG8ICs5GZd1If1HHpD7ONqf1U96RnvITBwPkjiQL8doGFF4JELwy9LJQMKBwVNi0BZT3rGOwgMnw/iFhBFCTatGE6VeMCIoS+6OCUAf/vGOwkMnQ9GAo/DknAEXa7BXZu84f8GT4INFY+ANQTqetI93kFg+HxQ0yYIBCzqhcCUFSow3ECR5HQmrWBuan91PekeP4PrfDCOUB/ofGThZ9iWI4XpqNiS0wsah2U96R0/xYAOKJYAb4oL8vlWuHQA3ZPH3JnPt8KhA4qTv8Xanc+3ExjSAXTDUkq78vmvCLAuHVCe+xX3sfw8iECfDihRprA7n28m0KsDSjXADUkiZz7fjB4dUC/BkkhZZz57eHh4eHh4eHh4eHh4eHh4XIn/ATeCkewbO89XAAAAAElFTkSuQmCC", isDefault:true },
+        { name:"Utopia",        url:"https://gas.education",                                                               icon:"https://gas.education/favicon.ico",                                                                                                                                                                           isDefault:true },
+        { name:"0K",            url:"https://cdn.jsdelivr.net/gh/abndnce/b0k@main/jsdelivr/index.svg",                    icon:"https://www.jsdelivr.com/icon_256x256.png",                                                                                                                                                                   isDefault:true },
+        { name:"Xylara",        url:"https://xylara.hyghj.eu.org/",                                                       icon:"https://cdn.discordapp.com/icons/1357471797217333328/fdeea29d47c5d94eb28fe0e150102c9d.webp?size=64",                                                                                                         isDefault:true },
+      ],
+      games: [
+        { name:"Angry Birds Epic",               url:"https://abwebports.vercel.app/Epic",                                icon:"https://i.imgur.com/ql7Gz9e.jpeg",                                                                                                                                                                           isDefault:true },
+        { name:"Bad Piggies",                    url:"https://riaannn.github.io/Bad-Piggies/",                            icon:"https://preview.redd.it/which-of-these-app-icons-is-the-best-in-your-opinion-for-v0-eooqvsjlfb971.png?width=185&format=png&auto=webp&s=e8267058bec260d939d0bdc052bb1c9bc4516787", isDefault:true },
+        { name:"Baldi's Basics",                 url:"https://riaannn.github.io/Baldis-Basics/",                          icon:"https://play-lh.googleusercontent.com/EPV1TB4So1lB0DGrdCVExDpNU8ML67nd8OqBeoOIM-s6sDicxmDdPvCXD6n7LKevFl0",                                                                                                  isDefault:true },
+        { name:"Celeste",                        url:"https://riaannn.github.io/CelesteGN/",                              icon:"https://image.api.playstation.com/gs2-sec/appkgo/prod/CUSA11235_00/1/i_1542763946643aa6b17c6232c30d581802f0a6fe00cc0ddd0493987857d9db0a/i/icon0.png",                                                       isDefault:true },
+        { name:"Granny",                         url:"https://riaannn.github.io/Granny/",                                 icon:"https://img.utdstc.com/icon/307/95f/30795f2ffbff795738108567ba5ae03cef007e0eaf3c73a5b7a7733b7518dc68:200",                                                                                                   isDefault:true },
+        { name:"TABS",                           url:"https://riaannn.github.io/TABS/",                                   icon:"https://img.tapimg.net/market/images/501346ca4110ebc74df303bdab4590a2.png/appicon?t=1",                                                                                                                      isDefault:true },
+        { name:"Just Shapes & Beats",            url:"https://riaannn.github.io/Just-Shapes-and-Beats/",                  icon:"https://berzerkstudio.com/app/uploads/2023/11/JSB_Keyart01_1920x1200-1.png",                                                                                                                                  isDefault:true },
+        { name:"Plague Inc",                     url:"https://riaannn.github.io/Plague-Inc/",                             icon:"https://play-lh.googleusercontent.com/qLgeusnY6S6JC_qB7s1qz5rPzrzMIuiXDvQN2R9qZhuQb3xTw4adMD0-Ktk12LrLwFB_wn_ftNVvLDsixSBeGQ",                                                                            isDefault:true },
+        { name:"Vampire Survivors",              url:"https://riaannn.github.io/Vampire-Survivors/",                      icon:"https://play-lh.googleusercontent.com/R1dShZj1HNBQzrHhsAD9_F8BRc2FU-nlDMU7OIAIwnMge04QWvNZR-clnXnEd_v30Qo",                                                                                               isDefault:true },
+        { name:"SlendyTubbies I",                url:"https://riaannn.github.io/SlendyTubbies1/",                          icon:"https://i1.sndcdn.com/artworks-Sx0OhzJqYxdTlzIX-vG7Rfg-t500x500.jpg",                                                                                                                                       isDefault:true },
+        { name:"SlendyTubbies II",               url:"https://riaannn.github.io/SlendyTubbies2/",                          icon:"https://tiermaker.com/images/chart/chart/slendytubbies-ii-characters-471984/1cpng.png",                                                                                                                      isDefault:true },
+        { name:"SlendyTubbies 2D",               url:"https://riaannn.github.io/SlendyTubbies2D/",                         icon:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTkuIsZr4XQGeFhof0Hq4SmjldTxFEbZxf8-A&s",                                                                                                             isDefault:true },
+        { name:"Five Nights at Frickbears 3",    url:"https://riaannn.github.io/Five-Nights-at-Frickbears-3/",            icon:"https://i.imgur.com/dIIAThP.png",                                                                                                                                                                            isDefault:true },
+        { name:"Stardew Valley",                 url:"https://riaannn.github.io/Stardew-Valley1/",                        icon:"https://assets.nintendo.eu/image/upload/f_auto,c_limit,w_992,q_auto:low/MNS/NOE/70010000001802/SQ_NSwitchDS_StardewValley",                                                                                   isDefault:true },
+        { name:"Apes vs Helium",                 url:"https://riaannn.github.io/Apez-vz-Helium/",                         icon:"https://cdn2.steamgriddb.com/icon/96ede18295a1258ffbe1dca74eed34d0.png",                                                                                                                                     isDefault:true },
+        { name:"Terraria",                       url:"https://riaannn.github.io/Terrariia/",                              icon:"https://cdn.jsdelivr.net/gh/freebuisness/covers@main/669.png",                                                                                                                                                 isDefault:true },
+        { name:"Half Life 2",                    url:"https://riaannn.github.io/Half-Life-2/",                            icon:"https://supermath.salavat.ru/png/games/hl2.webp",                                                                                                                                                            isDefault:true },
+        { name:"MINDWAVE",                       url:"https://riaannn.github.io/MINDWAVE/",                               icon:"https://cdn.jsdelivr.net/gh/freebuisness/covers@main/648.png",                                                                                                                                                isDefault:true },
+        { name:"Clover Pit",                     url:"https://riaannn.github.io/Clover-Pit/",                             icon:"https://cdn.jsdelivr.net/gh/freebuisness/covers@main/716.png",                                                                                                                                                isDefault:true },
+        { name:"PVZ GOTY Edition",               url:"__PVZ__",                                                           icon:"https://cdn2.steamgriddb.com/icon/c724bedfba9b4aeb92b446fbb6baf31c.png",                                                                                                                                     isDefault:true, isPVZ:true },
+        { name:"PVZ Fusion KNOCKOFF",            url:"https://riaannn.github.io/FAKE-PVZ-Fusion-attempt/",                icon:"https://cdn2.steamgriddb.com/icon_thumb/043555cbce9685a223341da753a18198.png",                                                                                                                               isDefault:true },
+        { name:"Balatro",                        url:"https://riaannn.github.io/balatrooo/",                              icon:"https://cdn2.steamgriddb.com/icon/066e25a0712b306a9b95230f6ec4a051.ico",                                                                                                                                     isDefault:true },
+        { name:"Poly Bridge",                    url:"https://riaannn.github.io/Poly-Bridge-test-2/",                     icon:"https://cdn2.steamgriddb.com/icon/7503cfacd12053d309b6bed5c89de212/32/256x256.png",                                                                                                                          isDefault:true },
+        { name:"Dadish",                         url:"https://riaannn.github.io/dadish/",                                 icon:"https://cdn.jsdelivr.net/gh/freebuisness/covers@main/357.png",                                                                                                                                                isDefault:true },
+        { name:"Dadish 2",                       url:"https://riaannn.github.io/dadish2",                                 icon:"https://cdn.jsdelivr.net/gh/freebuisness/covers@main/355.png",                                                                                                                                                isDefault:true },
+        { name:"Dadish 3",                       url:"https://riaannn.github.io/dadish3",                                 icon:"https://cdn.jsdelivr.net/gh/freebuisness/covers@main/356.png",                                                                                                                                                isDefault:true },
+        { name:"Dadish 3D",                      url:"https://riaannn.github.io/dadish3d",                                icon:"https://cdn.jsdelivr.net/gh/freebuisness/covers@main/358.png",                                                                                                                                                isDefault:true },
+        { name:"Daily Dadish",                   url:"https://riaannn.github.io/dailydadish",                             icon:"https://cdn.jsdelivr.net/gh/freebuisness/covers@main/359.png",                                                                                                                                                isDefault:true },
+      ],
+      apps: [
+        { name:"WatchParty",      url:"https://watchparty.me",                     icon:"https://www.watchparty.me/favicon.ico",                          isDefault:true },
+        { name:"geometry.today",  url:"https://geometry.today",                    icon:"https://geometry.today/favicon.ico",                              isDefault:true },
+        { name:"Code Editor",     url:"https://riaannn.github.io/Code-Editor/",    icon:"https://cdn.jsdelivr.net/gh/freebuisness/covers@main/429.png",    isDefault:true },
+      ],
+      secrets: [
+        { name:"Yandere Simulator", url:"https://riaannn.github.io/Yandere-Simulator/", icon:"https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/i/8939caba-2c60-4aeb-bb20-d61b0458b178/daamgvz-d0dd1426-a94f-4a2e-97e2-c54cd9aa51cc.png", isDefault:true }
+      ]
+    };
+
+    const DATA = {
+      currentTab: 'games',
+      presets: [
+        { id:'google',    name:'Google',    title:'Google',           icon:'https://www.google.com/favicon.ico' },
+        { id:'canvas',    name:'Canvas',    title:'Dashboard',        icon:'https://wdmcs.instructure.com/favicon.ico' },
+        { id:'docs',      name:'Docs',      title:'Google Docs',      icon:'https://docs.google.com/favicon.ico' },
+        { id:'classroom', name:'Classroom', title:'Google Classroom', icon:'https://classroom.google.com/favicon.ico' },
+      ],
+      shortcuts: (() => {
+        try {
+          const uc = JSON.parse(localStorage.getItem('userCustomShortcuts')) || {};
+          return {
+            web:     [...DEFAULT_SHORTCUTS.web,     ...(uc.web     || [])],
+            games:   [...DEFAULT_SHORTCUTS.games,   ...(uc.games   || [])],
+            apps:    [...DEFAULT_SHORTCUTS.apps,    ...(uc.apps    || [])],
+            secrets: [...DEFAULT_SHORTCUTS.secrets, ...(uc.secrets || [])],
+          };
+        } catch {
+          localStorage.removeItem('userCustomShortcuts');
+          return { web:[...DEFAULT_SHORTCUTS.web], games:[...DEFAULT_SHORTCUTS.games], apps:[...DEFAULT_SHORTCUTS.apps], secrets:[...DEFAULT_SHORTCUTS.secrets] };
+        }
+      })(),
+      editingIndex:     null,
+      editingCategory:  null,
+      isEditingDefault: false
+    };
+
+    /* ══════════════════════════════════════════════════════════════
+       UI CONTROLLER
+    ══════════════════════════════════════════════════════════════ */
+    const UI = {
+      /**
+       * renderGrid()
+       * Builds the card grid using a DocumentFragment for a single
+       * DOM write. All launch actions go through Launcher.prompt().
+       */
+      renderGrid() {
+        const grid    = document.getElementById('mainGrid');
+        const q       = document.getElementById('searchBar').value.toLowerCase().trim();
+        const animate = CFG.get('cardAnim');
+        const items   = [];
+
+        // Direct URL entry
+        if (q.includes('.') || q.startsWith('http'))
+          items.push({ name:'Open Direct Link', url:q, icon:`https://www.google.com/s2/favicons?sz=64&domain=${q}`, isDirect:true });
+
+        // Current tab items
+        (DATA.shortcuts[DATA.currentTab] || []).forEach((item, index) => {
+          if (!q || item.name.toLowerCase().includes(q))
+            items.push({ ...item, index, category:DATA.currentTab });
+        });
+
+        // Secret items on special query
+        if (q.includes('yandere'))
+          (DATA.shortcuts.secrets || []).forEach((item, index) => {
+            if (item.name.toLowerCase().includes(q))
+              items.push({ ...item, index, category:'secrets' });
+          });
+
+        document.getElementById('status-count').textContent = items.length;
+        if (!items.length) { grid.innerHTML = `<div class="empty">◌&nbsp; NO ENTRIES MATCH QUERY</div>`; return; }
+
+        const frag = document.createDocumentFragment();
+        items.forEach((item, i) => {
+          const d = document.createElement('div');
+          d.className = 'card' + (item.isDirect ? ' direct' : '');
+          if (animate) d.style.animationDelay = (i * 0.02) + 's';
+          else d.style.animation = 'none';
+
+          const autoIcon  = `https://www.google.com/s2/favicons?sz=128&domain=${item.url === '__PVZ__' ? 'pvz.com' : item.url}`;
+          const icon      = item.icon || autoIcon;
+          // All launches funnel through a single expression:
+          const launchFn  = item.isPVZ
+            ? `PVZ.tryLaunch('${item.name.replace(/'/g,"&#39;")}')`
+            : `Launcher.prompt('${item.url.replace(/'/g,'%27')}','${item.name.replace(/'/g,"&#39;")}')`;
+
+          d.innerHTML = `
+            <div class="card-num">${String(i+1).padStart(3,'0')}</div>
+            <div class="card-corner"></div>
+            <img src="${icon}" class="card-thumb" loading="lazy"
+                 onerror="this.src='${autoIcon}'" onclick="${launchFn}">
+            <div class="card-body">
+              <div class="card-name" title="${item.name}">${item.name}</div>
+              <div class="card-actions">
+                <button class="card-launch" onclick="${launchFn}">LAUNCH</button>
+                ${!item.isDirect ? `<button class="card-edit" onclick="UI.openEditModal('${item.category}',${item.index})">EDIT</button>` : ''}
+              </div>
+            </div>`;
+          frag.appendChild(d);
+        });
+        grid.innerHTML = '';
+        grid.appendChild(frag);
+        this.updateCounts();
+      },
+
+      updateCounts() {
+        ['web','games','apps'].forEach(t => document.getElementById('cnt-'+t).textContent = DATA.shortcuts[t].length);
+        document.getElementById('stat-total').textContent =
+          DATA.shortcuts.web.length + DATA.shortcuts.games.length + DATA.shortcuts.apps.length;
+        document.getElementById('stat-cloak').textContent = Launcher.selectedPreset.name.toUpperCase();
+      },
+
+      switchTab(tab) {
+        DATA.currentTab = tab;
+        document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
+        document.getElementById('tab-'+tab).classList.add('active');
+        document.getElementById('status-tab').textContent = tab.toUpperCase();
+        document.getElementById('stat-tab').textContent   = tab.toUpperCase();
+        this.renderGrid();
+      },
+
+      openAddModal() {
+        DATA.editingIndex = null; DATA.editingCategory = DATA.currentTab; DATA.isEditingDefault = false;
+        document.getElementById('modalTitle').textContent = 'New Entry';
+        ['editName','editUrl','editIcon'].forEach(id => document.getElementById(id).value = '');
+        document.getElementById('editCategory').value = DATA.currentTab;
+        document.getElementById('deleteBtn').style.display = 'none';
+        this.toggleModal('editModal', true);
+      },
+
+      openEditModal(category, index) {
+        const item = DATA.shortcuts[category][index];
+        DATA.editingIndex = index; DATA.editingCategory = category; DATA.isEditingDefault = !!item.isDefault;
+        document.getElementById('modalTitle').textContent = 'Edit Entry';
+        document.getElementById('editName').value     = item.name;
+        document.getElementById('editUrl').value      = item.url === '__PVZ__' ? PVZ_URL : item.url;
+        document.getElementById('editIcon').value     = item.icon || '';
+        document.getElementById('editCategory').value = category;
+        document.getElementById('deleteBtn').style.display = DATA.isEditingDefault ? 'none' : 'block';
+        this.toggleModal('editModal', true);
+      },
+
+      saveShortcut() {
+        const name   = document.getElementById('editName').value.trim();
+        const url    = document.getElementById('editUrl').value.trim();
+        const icon   = document.getElementById('editIcon').value.trim();
+        const newCat = document.getElementById('editCategory').value;
+        if (!name || !url) { alert('Name and URL are required.'); return; }
+        const item = { name, url, icon };
+        if (DATA.editingIndex === null) {
+          DATA.shortcuts[newCat].push(item);
+        } else if (newCat !== DATA.editingCategory && !DATA.isEditingDefault) {
+          DATA.shortcuts[DATA.editingCategory].splice(DATA.editingIndex, 1);
+          DATA.shortcuts[newCat].push(item);
+        } else {
+          if (DATA.isEditingDefault) item.isDefault = true;
+          DATA.shortcuts[DATA.editingCategory][DATA.editingIndex] = item;
+        }
+        this.sync();
+      },
+
+      deleteShortcut() {
+        if (!confirm('Remove this entry?')) return;
+        DATA.shortcuts[DATA.editingCategory].splice(DATA.editingIndex, 1);
+        this.sync();
+      },
+
+      sync() {
+        const c = {
+          web:     DATA.shortcuts.web.filter(i => !i.isDefault),
+          games:   DATA.shortcuts.games.filter(i => !i.isDefault),
+          apps:    DATA.shortcuts.apps.filter(i => !i.isDefault),
+          secrets: DATA.shortcuts.secrets.filter(i => !i.isDefault),
+        };
+        localStorage.setItem('userCustomShortcuts', JSON.stringify(c));
+        this.renderGrid();
+        this.toggleModal('editModal', false);
+      },
+
+      forceReset() {
+        if (confirm('Wipe ALL data including settings?')) { localStorage.clear(); location.reload(); }
+      },
+
+      toggleModal(id, show) {
+        document.getElementById(id).classList.toggle('active', show);
+        if (show && id === 'settingsModal') { this.renderPresets(); CFG.populateUI(); }
+      },
+
+      renderPresets() {
+        document.getElementById('presetGrid').innerHTML = DATA.presets.map(p => `
+          <div class="preset-item${Launcher.selectedPreset.id===p.id?' selected':''}" onclick="Launcher.setPreset('${p.id}')">
+            <img src="https://www.google.com/s2/favicons?sz=32&domain=${p.icon}"> ${p.name}
+          </div>`).join('');
+      }
+    };
+
+    /* ══════════════════════════════════════════════════════════════
+       KEYBOARD SHORTCUTS
+    ══════════════════════════════════════════════════════════════ */
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') {
+        document.querySelectorAll('.modal.active').forEach(m => m.classList.remove('active'));
+        document.getElementById('pvzSetup').classList.add('hide');
+        // Close PIP window on Escape if open
+        if (document.getElementById('pipOverlay').classList.contains('active')) PIP.close();
+      }
+      if ((e.ctrlKey||e.metaKey) && e.key==='k') { e.preventDefault(); document.getElementById('searchBar').focus(); }
+      if ((e.ctrlKey||e.metaKey) && e.key===',')  { e.preventDefault(); UI.toggleModal('settingsModal',true); }
+    });
+
+    // Click outside PIP window closes it
+    document.getElementById('pipOverlay').addEventListener('click', e => {
+      if (e.target === document.getElementById('pipOverlay')) PIP.close();
+    });
+
+    /* ══════════════════════════════════════════════════════════════
+       INIT
+    ══════════════════════════════════════════════════════════════ */
+    window.onload = () => {
+      CFG.load();
+      if (!CFG.get('showBoot')) document.getElementById('boot').style.display = 'none';
+      else setTimeout(() => document.getElementById('boot').classList.add('hide'), 2600);
+    };
+    window.addEventListener('beforeunload', e => {
+      if (CFG.get('exitWarn')) { e.preventDefault(); e.returnValue = ''; }
+    });
+
+    Launcher.init();
+    UI.renderGrid();
+  </script>
+</body>
+</html>
